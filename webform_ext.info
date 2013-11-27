@@ -1,0 +1,16 @@
+name = Webform Extension
+description = Extends Webform (Customize form submissions)
+package = Webform
+core = 7.x
+configure = admin/config/content/webform_ext
+;dependencies - other projects that are required to make this one work
+dependencies[] = webform
+;files
+files[] = test/webform_ext.test
+;version info
+version = '7.x-1.0-dev'
+;javascript files
+;scripts[] = js/jquery.number.min.js
+;scripts[] = js/webform_ext_calcs.js
+;scripts[] = js/webform_ext_errors.js
+scripts[] = js/webform_ext_forms.js

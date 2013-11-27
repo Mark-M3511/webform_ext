@@ -1,0 +1,369 @@
+<?php
+/**
+ * @file
+ * webform_ext.module - Extends Webform (Customize form submissions)
+ */	
+ 
+require_once(drupal_get_path('module', 'webform_ext'). '/includes/webform_ext_consts.inc'); 
+require_once(drupal_get_path('module', 'webform_ext'). '/includes/webform_ext_funcs.inc');
+
+ /**
+ * Implementation of hook_help
+ */
+ 
+ 
+function webform_ext_help($path, $arg) {
+   $output = '';
+	switch($path){
+		case 'admin/help#webform_ext':
+		  $output = '<p>'. t('Extends Webform module to customize data submission for this app. Saves data to a table.').'</p>';
+		  break;		
+		default:
+         break;		
+	}
+   return $output;
+}
+ 
+/**
+* Implementation of hook_permission
+*/
+function webform_ext_permission() {
+   $result = array(
+	  'administer webform_ext' => array(
+	     'title' => t('Administer Webform Extension'),
+		 'description' => t('Allow authorized users to administer this module'),
+	   ),
+	   'submit webform_ext' => array(
+	     'title' => t('Submit data via Webform Extension'),
+		 'description' => t('Allows authorized users to submit data via this module'),
+	   ),
+	);
+	return $result;
+}
+  
+/**
+* Implementation of hook_menu
+*/
+function webform_ext_menu(){ 
+   $items = array();   
+  
+	
+   $items['admin/config/content/webform_ext'] = array(
+       'title' => 'Webform Extension (VPGH)', 
+       'description' => 'Test Paypal service request/response',
+       'page callback' => 'drupal_get_form',
+       'page arguments' => array('_webform_ext_build_config_form'),
+       'access arguments' => array('administer webform_ext'),
+       'file' => 'webform_ext_admin_form.inc',
+       'file path' => drupal_get_path('module', 'webform_ext'). '/includes',	
+   );	
+   
+   $items['admin/config/content/webform_ext/main'] = array(
+	   'title' => 'Paypal Integration Testing', 
+       'type' => MENU_DEFAULT_LOCAL_TASK,
+   );
+   
+   $items['admin/config/content/webform_ext/paypal'] = array(
+   	   'title' => 'Paypal Configuration Values',
+   	   'type' =>  MENU_LOCAL_TASK,
+   	   'description' => 'Set Paypal values for VuPoint GH',	
+   	   'page callback' => 'drupal_get_form',
+   	   'page arguments' => array('_webform_ext_pp_api_config_form'),
+   	   'access arguments' => array('administer webform_ext'),
+   	   'file' => 'webform_ext_admin_form_pp.inc',
+       'file path' => drupal_get_path('module', 'webform_ext'). '/includes',	
+   	   'weight' => 10,
+   );        
+    
+   $items['webform_ext/paypalapi/testppec'] = array(
+       'title' => 'Webform Extension Paypal API Integration Testing',
+       'description' => 'Connect to sandbox/production server to test Express Checkout process',
+       'page callback' => 'PaypalExpressCheckoutAPITest',
+       'access arguments' => array('administer webform_ext'),
+       'file' => 'webform_ext_paypal_express_checkout.inc',
+       'file path' => drupal_get_path('module', 'webform_ext'). '/includes',	
+   );
+   
+   $items['webform_ext/paypalapi/testppdp'] = array(
+       'title' => 'Webform Extension Paypal API Integration Testing',
+       'description' => 'Connect to Paypal sandbox/production server to test Direct Payment process',
+       'page callback' => 'PaypalDirectPaymentAuthTest',
+       'access arguments' => array('administer webform_ext'),
+       'file' => 'webform_ext_paypal_express_checkout.inc',
+       'file path' => drupal_get_path('module', 'webform_ext'). '/includes',	
+   );
+   
+   $items['webform_ext/paypalapi/testppbuttoncreate'] = array(
+       'title' => 'Webform Extension Paypal API Integration Testing',
+       'description' => 'Connect to Paypal sandbox/production server to test Button Creation process',
+       'page callback' => 'PaypalWPSButtonCreate',
+       'access arguments' => array('administer webform_ext'),
+       'file' => 'webform_ext_paypal_button_intf.inc',
+       'file path' => drupal_get_path('module', 'webform_ext'). '/includes',	
+   );
+   
+   $items['webform_ext/paypalapi/testipncallback'] = array(
+       'title' => 'Webform Extension Paypal API Integration Testing',
+       'description' => 'Connect to Paypal sandbox/production server to test IPN Callback',
+       'page callback' => 'PaypalWPSIPNCallBack',
+       'access arguments' => array('submit webform_ext'),
+       'file' => 'webform_ext_paypal_button_intf.inc',
+       'file path' => drupal_get_path('module', 'webform_ext'). '/includes',	
+   );
+   
+   $items['vpgh/review_pay'] = array(
+       'title' => 'Webform Extension Paypal API Integration Live',
+       'description' => 'Connect to Paypal sandbox/production server. Paypal button integration.',
+       'page callback' => 'PayWithPayPal',
+       'access arguments' => array('submit webform_ext'),
+       'file' => 'webform_ext_paypal_button_intf.inc',
+       'file path' => drupal_get_path('module', 'webform_ext'). '/includes',	
+   );
+   
+   $items['vpgh/pp_ipn_listener'] = array(
+       'title' => 'Webform Extension Paypal API Integration',
+       'description' => 'Paypal IPN Callback',
+       'page callback' => 'PaypalPPSIPNCallBackLive',
+       'access arguments' => array('submit webform_ext'),
+       'file' => 'webform_ext_paypal_button_intf.inc',
+       'file path' => drupal_get_path('module', 'webform_ext'). '/includes',	
+   );
+    
+   $items['webform_ext/dodirectpayment'] = array(
+      'title' => 'Webform Extension Paypal API Integration',
+      'description' => 'Connect to Paypal sandbox/production server to utilize Direct Payment process',
+      'page callback' => 'PaypalDirectPaymentAuthLive',
+      'access arguments' => array('submit webform_ext'),
+      'file' => 'webform_ext_paypal_express_checkout.inc',
+      'file path' => drupal_get_path('module', 'webform_ext'). '/includes',	
+   );	
+   
+   $items['vpgh/reservation2'] = array(
+      'title' => 'Reservation Form',
+      'description' => 'Reservation form integrated from the webform_ext module',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('_webform_ext_reservation_form_1'),
+      'access arguments' => array('submit webform_ext'),
+      'file' => '_webform_ext_res_form.inc',
+      'file path' => drupal_get_path('module', 'webform_ext'). '/forms',	
+   );
+   
+   $items['vpgh/payment'] = array(
+      'title' => 'Payment Form',
+      'description' => 'Payment processing form',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('_webform_ext_payment_form_1'),
+      'access arguments' => array('submit webform_ext'),
+      'file' => '_webform_ext_pmt_form.inc',
+      'file path' => drupal_get_path('module', 'webform_ext'). '/forms',	
+   );
+   
+   //"/webform_ext/paypalapi/DGdoExpressCheckout.php?token=EC-64F15871AU6493713&PayerID=BUHWZCGJ8H35Y"
+   
+   $items['webform_ext/paypalapi/PaypalGetExpressCheckoutPayment'] = array(
+      'title' => 'PP GetExpressChecout',
+      'description' => 'Payment processor get EC',
+      'page callback' => 'PaypalGetExpressCheckoutPayment',
+      /* 'page arguments' => array(3,4), */
+      'access arguments' => array('submit webform_ext'),
+      'file' => 'webform_ext_paypal_express_checkout.inc',
+      'file path' => drupal_get_path('module', 'webform_ext'). '/includes',	
+   );
+   
+   $items['webform_ext/paypalapi/PaypalDoExpressCheckoutPayment'] = array(
+      'title' => 'PP DoExpressCheckout',
+      'description' => 'Payment processor do EC',
+      'page callback' => 'PaypalDoExpressCheckoutPayment',
+      /* 'page arguments' => array(3,4), */
+      'access arguments' => array('submit webform_ext'),
+      'file' => 'webform_ext_paypal_express_checkout.inc',
+      'file path' => drupal_get_path('module', 'webform_ext'). '/includes',	
+   );  
+       
+   return $items;
+}
+
+/**
+* Implementation of hook_init
+*/
+
+function webform_ext_init() {
+  // We don't want caching for some links in this module
+  //if (drupal_match_path($_GET['q'],'vpgh/*')){ request_path()
+  if (drupal_match_path(request_path(),'vpgh/*')){
+     //$GLOBALS['conf']['cache'] = FALSE;
+	 drupal_page_is_cacheable(FALSE);
+  }
+}
+
+/**
+* Implementation of hook_cronapi
+*/
+function webform_ext_cronapi($op, $function = NULL) {
+  switch($op) {
+    case 'list':
+	  return array(WEBFORM_EXT_CRONAPI_BLOCKED_DATES => 'Process \'Availability Blocker\' entries'); 
+	break;
+	case 'rule':
+	  switch($function){
+	    case WEBFORM_EXT_CRONAPI_BLOCKED_DATES:
+		  return WEBFORM_EXT_CRON_5MINS;
+		break;  
+	  }
+	break;
+	case 'execute':
+	  switch($function){
+	    case WEBFORM_EXT_CRONAPI_BLOCKED_DATES:
+		  _webform_ext_init_blocked_dates_queue();
+		break;  
+	  }
+	break;
+	case 'settings':
+      switch ($function) {
+        case WEBFORM_EXT_CRONAPI_BLOCKED_DATES: 
+		  return array('enabled' => TRUE);
+		break;
+      }
+    break;
+    case 'configure':
+      // switch ($function) {
+        // case WEBFORM_EXT_CRONAPI_BLOCKED_DATES: return 'admin/configure-modules-settings/xxx';
+      // }
+	break;  
+  }	
+}
+
+/**
+* Implementation of hook_cron_queue_info
+*/
+function webform_ext_cron_queue_info()
+{
+   $queues[WEBFORM_EXT_QUEUE_CREATE_BLOCKING_NODES] = array(
+     'worker callback' => '_webform_ext_processed_blocked_dates',
+     'time' => 180,
+   );
+   
+   $queues[WEBFORM_EXT_QUEUE_CONFIRMATION_EMAILS] = array(
+     'worker callback' => '_webform_ext_queue_send_mail',
+     'time' => 180,
+   );
+   
+   return $queues;
+}
+
+/**
+* Implementation of hook_menu_link_alter
+*/
+
+/* function webform_ext_menu_link_alter(&$item)
+{ 
+   if (isset($item['title']) && strtolower($item['title']) == WEBFORM_EXT_RESERVATIONS_PATH_ALIAS) {
+      $item['options']['alter'] = TRUE;
+   }
+} */
+
+/**
+* Implementation of hook_menu_translated_link_alter
+*/
+/* function webform_ext_translated_menu_link_alter(&$item){
+   if (isset($item['title']) && strtolower($item['title']) == WEBFORM_EXT_RESERVATIONS_PATH_ALIAS) {     
+	  $protocol = HTTP;	   
+      if (IS_SSL){ 
+	     $protocol = HTTPS;
+		 $item['link_path'] =  $protocol. WEBFORM_EXT_HOST . '/'. WEBFORM_EXT_RESERVATIONS_PATH_ALIAS;
+	  }else{
+	     $item['link_path'] = drupal_get_normal_path(WEBFORM_EXT_RESERVATIONS_PATH_ALIAS);
+	  }
+   }
+} */
+
+ 
+ /**
+ * Implementation of hook_webform_submission_update
+ */
+
+function webform_ext_node_insert($node){    
+	switch($node->type)
+	{ 
+	  case ROOMS_AND_FEATURES:
+		_insert_new_room($node); 
+		break; 
+	  case NODE_TYPE_AVAILABILITY_BLOCKER:
+		_insert_blocked_date($node); 
+		break;	
+	  default:
+         break;	   
+	}
+}
+
+function webform_ext_node_update($node) {
+   switch($node->type)
+   {
+      case ROOMS_AND_FEATURES:
+   	    _update_room($node); 
+   	    break; 
+	  case NODE_TYPE_AVAILABILITY_BLOCKER:
+		_update_blocked_date($node); 
+		break;	
+      default:
+         break;		
+   }   
+}
+
+function webform_ext_node_delete($node) {
+   switch($node->type)
+   {
+      case ROOMS_AND_FEATURES:
+   	    // _update_room($node); 
+   	    break; 
+	  case NODE_TYPE_AVAILABILITY_BLOCKER:
+        _delete_blocked_date($node); 		
+		break;	
+      default:
+         break;		
+   }   
+}
+
+function webform_ext_mail($key, &$message, $params)
+{		
+   $langcode = $message['language']->language;
+   // dpm($message);
+   switch($key)
+   {
+      case WEBFORM_EXT_EMAIL_KEY:
+	     $message['subject'] = $params['subject'];		
+		 $message['body'][] = $params['message_body'];
+	  break;
+	  default:
+	  break;
+   }    
+}
+
+/*
+function webform_ext_mail_alter(&$message)
+{
+ 	foreach($message as $key => $value){
+       error_log("\$message = {$key} => {$value}");
+       if (is_array($value)){
+          foreach($value as $key2 => $value2){
+             error_log("\$message = {$key2} => {$value2}");
+          }
+       }
+    }
+}
+*/
+
+function webform_ext_mandrill_mail_alter(&$mandrill_params, $message)
+{
+   _webform_ext_configure_mandrill_merge_vars(&$mandrill_params, $message);
+}
+
+/* function webform_ext_views_query_alter(&$view, &$query) 
+{
+   if ($view->name == CALENDAR_VIEW_NAME && $view->current_display == CALENDAR_VIEW_TARGET_DISPLAY){   
+	   dpm($query);
+   }	
+} */
+ 
+// -------------------------------------bof: hooks ---------------------------------------------- //
+ 

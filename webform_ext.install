@@ -1,0 +1,2072 @@
+<?php
+
+/**
+ * @file
+ *  Web Form Extender install/uninstall routines.
+ */
+
+function webform_ext_schema(){
+  $schema['zen_vupoint_reservations'] = array(
+     'description' => 'Stores reservation submitted by visitors to the site',
+	 'fields' => array(
+	    'rid' => array(
+		   'description' => 'The primary identifier for records in this table', 
+           'type' => 'serial', 
+           'unsigned' => TRUE, 
+           'not null' => TRUE,
+		),
+	    'nid' => array(
+		   'description' => 'The primary identifier for the attached node', 
+           'type' => 'int', 
+           'unsigned' => TRUE, 
+           'not null' => TRUE,
+		),
+	    'sid' => array(
+		   'description' => 'The primary identifier for records submitted through the form api.', 
+           'type' => 'int', 
+           'unsigned' => TRUE, 
+           'not null' => TRUE,
+		),
+		'reservation_uid' => array(
+		   'description' => 'Reservation node unique identifier', 
+           'type' => 'varchar',  
+           'length' => 30,        
+           'not null' => TRUE,
+		),
+		'create_date' => array(
+		   'description' => 'Date and time record was created',          
+           'type' => 'datetime',
+           'mysql_type' => 'DATETIME',
+           'pgsql_type' => 'timestamp without time zone', 
+           'sqlite_type' => 'VARCHAR', 
+           'sqlsrv_type' => 'smalldatetime',		   
+           'not null' => TRUE,
+		),
+		'number_of_guests' => array(
+		   'description' => 'The number of persons (guests)', 
+           'type' => 'int', 
+           'unsigned' => TRUE, 
+           'not null' => TRUE,
+		),
+		'date_of_arrival' => array(
+		   'description' => 'Date of guests\' arrival',          
+           'type' => 'datetime',
+           'mysql_type' => 'DATETIME',
+           'pgsql_type' => 'timestamp without time zone', 
+           'sqlite_type' => 'VARCHAR', 
+           'sqlsrv_type' => 'smalldatetime',		   
+           'not null' => TRUE,
+		),	
+		'date_of_departure' => array(
+		   'description' => 'Date of guests\' departure',          
+           'type' => 'datetime',
+           'mysql_type' => 'DATETIME',
+           'pgsql_type' => 'timestamp without time zone', 
+           'sqlite_type' => 'VARCHAR', 
+           'sqlsrv_type' => 'smalldatetime',		   
+           'not null' => TRUE,
+		),
+		'salutation' => array(
+		   'description' => 'Email address of attendee.', 
+           'type' => 'varchar',  
+           'length' => 20,        
+           'not null' => TRUE,
+		),
+		'first_name' => array(
+		   'description' => 'First name of registering guest', 
+           'type' => 'varchar',  
+           'length' => 50,        
+           'not null' => TRUE,
+		),
+		'last_name' => array(
+		   'description' => 'Last name of registering guest', 
+           'type' => 'varchar',  
+           'length' => 50,        
+           'not null' => TRUE,
+		),
+		'email' => array(
+		   'description' => 'Email address of registering guest', 
+           'type' => 'varchar',  
+           'length' => 50,        
+           'not null' => TRUE,
+		), 
+		'contact_number_1' => array(
+		   'description' => 'Contact number of registering guest', 
+           'type' => 'varchar',  
+           'length' => 20,        
+           'not null' => TRUE,
+		), 
+		'street_address_1' => array(
+		   'description' => 'Street address of registering guest', 
+           'type' => 'varchar',  
+           'length' => 100,        
+           'not null' => TRUE,
+		),
+		'street_address_2' => array(
+		   'description' => 'Street address part 2 of registering guest', 
+           'type' => 'varchar',  
+           'length' => 100, 
+		), 
+		'city' => array(
+		   'description' => 'City of residence of registering guest', 
+           'type' => 'varchar',  
+           'length' => 100,       
+           'not null' => TRUE,
+		),
+		'countries' => array(
+		   'description' => 'Country of residence of registering guest', 
+           'type' => 'varchar',  
+           'length' => 10,       
+           'not null' => TRUE, 
+		),
+		'prov_state_terr_f' => array(
+		   'description' => 'Province/Territory/State of residence of registering guest', 
+           'type' => 'varchar',  
+           'length' => 20,
+		   'not null' => TRUE, 
+		), 
+		'postal_zip_code' => array(
+		   'description' => 'Postal/Zip Code of residence of registering guest', 
+           'type' => 'varchar',  
+           'length' => 20,
+		   'not null' => TRUE, 
+		),	
+		'sub_total' => array(
+		  'description' => 'Pre-tax amount to be paid by guest',  
+		  'type' => 'numeric', 
+		  'size' => 'normal', 
+		  'not null' => TRUE, 
+		  'default' => 0, 
+		  'precision' => 11, 
+		  'scale' => 3,
+		),
+		'daily_rate' => array(
+		  'description' => 'Daily rate amount to be paid by guest',  
+		  'type' => 'numeric', 
+		  'size' => 'normal', 
+		  'not null' => TRUE, 
+		  'default' => 0, 
+		  'precision' => 11, 
+		  'scale' => 3,
+		),
+		'daily_rate_add' => array(
+		  'description' => 'Additional daily rate amount to be paid by guest',  
+		  'type' => 'numeric', 
+		  'size' => 'normal', 
+		  'not null' => TRUE, 
+		  'default' => 0, 
+		  'precision' => 11, 
+		  'scale' => 3,
+		),
+		'room_type' => array(
+		   'description' => 'Room type selection', 
+           'type' => 'varchar',  
+           'length' => 10,
+		   'not null' => TRUE,
+		),
+        'request_status' => array(
+		   'description' => 'Success or failure of reservation request', 
+           'type' => 'varchar',  
+           'length' => 20,
+		   'default' => 'UNKNOWN',
+		   'not null' => TRUE, 
+		),
+        'ipn_track_id' => array(
+		   'description' => 'Instant Payment Notification (IPN) tracking identifier', 
+           'type' => 'varchar',  
+           'length' => 30,        
+           'not null' => FALSE,
+		), 		
+	    'note' => array(
+		   'description' => 'Additional information from registering guest', 
+           'type' => 'varchar',  
+           'length' => 500,
+		),			
+	 ),	
+	 'primary key' => array('rid'),
+	 'indexes' => array(
+		'vupoint_reservations_nid' => array('nid'), 
+		'vupoint_reservations_sid' => array('sid'),
+		'vupoint_reservations_create_date' => array('create_date'),
+		'vupoint_reservations_email' => array('email'),
+		'vupoint_reservations_res_uid' => array('reservation_uid'),
+		'vupoint_reservations_ipn_track_id' => array('ipn_track_id'),
+     ), 
+  );
+
+  $schema['zen_vupoint_rooms'] = array(
+     'description' => 'Stores room names and codes among other pertinent data',
+	 'fields' => array(
+	    'rid' => array(
+		   'description' => 'The primary identifier for records in this table', 
+           'type' => 'serial', 
+           'unsigned' => TRUE, 
+           'not null' => TRUE,
+		),
+		'nid' => array(
+		   'description' => 'Node id of room type', 
+           'type' => 'int', 
+           'unsigned' => TRUE, 
+           'not null' => TRUE,
+		),
+		'code' => array(
+		   'description' => 'Code used to identify the room', 
+           'type' => 'varchar',  
+           'length' => 20,        
+           'not null' => TRUE,
+		),
+		'name' => array(
+		   'description' => 'Name of the room if applicable', 
+           'type' => 'varchar',  
+           'length' => 50,        
+           'not null' => FALSE,
+		),	
+		'available' => array(
+		   'description' => 'Yes/No value indicating room availability', 
+           'type' => 'int',
+		   'unsigned' => TRUE,
+           'not null' => TRUE,
+           'default' => 1,
+           'size' => 'tiny',         
+		),
+		'private_amenities' => array(
+		   'description' => 'Yes/No value indicating availability of private amenities', 
+           'type' => 'int',
+		   'unsigned' => TRUE,
+           'not null' => TRUE,
+           'default' => 0,
+           'size' => 'tiny',         
+		),
+		'available_negation_code' => array(
+		   'description' => 'Reason code indicating room is not available for selection', 
+           'type' => 'varchar',
+		   'length' => 3,        
+           'not null' => FALSE,         
+		),
+		'available_negation_date' => array(
+		   'description' => 'Date and time room was made unavailable',          
+           'type' => 'datetime',
+           'mysql_type' => 'DATETIME',
+           'pgsql_type' => 'timestamp without time zone', 
+           'sqlite_type' => 'VARCHAR', 
+           'sqlsrv_type' => 'smalldatetime',		   
+           'not null' => FALSE,         
+		),
+		
+	 ),	
+	 'primary key' => array('rid'),
+	 'indexes' => array(
+		'vupoint_reservations_code' => array('code'),
+		'vupoint_reservations_nid' => array('nid'),	
+	    'vupoint_reservations_avail_neg_code' => array('available_negation_code'),		
+		'vupoint_reservations_avail_neg_date' => array('available_negation_date'),		
+     ), 
+  );
+
+  $schema['zen_vupoint_room_bookings'] = array(
+     'description' => 'Stores room bookings. Next available date for each room.',
+	 'fields' => array(
+	    'rbid' => array(
+		   'description' => 'The primary identifier for records in this table', 
+           'type' => 'serial', 
+           'unsigned' => TRUE, 
+           'not null' => TRUE,
+		),
+		'rid' => array(
+		   'description' => 'Room identifier. Foreign key is rid in Room table', 
+           'type' => 'int', 
+           'unsigned' => TRUE, 
+           'not null' => TRUE,
+		),
+		'available_date' => array(
+		   'description' => 'Next date that room is available',          
+           'type' => 'datetime',
+           'mysql_type' => 'DATETIME',
+           'pgsql_type' => 'timestamp without time zone', 
+           'sqlite_type' => 'VARCHAR', 
+           'sqlsrv_type' => 'smalldatetime',		   
+           'not null' => TRUE,
+		),
+        'blocked_days' => array(
+		   'description' => 'Number of days for which room is blocked', 
+           'type' => 'int', 
+           'unsigned' => TRUE, 
+           'not null' => FALSE,
+		   'default' => 0,
+		), 
+        'line_total' => array(
+		  'description' => 'Amount charged for rooms stay', 
+          'type' => 'numeric', 
+		  'size' => 'normal', 
+		  'not null' => TRUE, 
+		  'default' => 0, 
+		  'precision' => 11, 
+		  'scale' => 3,
+		),
+        'num_guests' => array(
+		   'description' => 'Number of guests booked for duration of stay', 
+           'type' => 'int', 
+           'unsigned' => TRUE, 
+           'not null' => FALSE,
+		   'default' => 0,
+		), 
+        'date_of_arrival' => array(
+		   'description' => 'Date of guests\' arrival',          
+           'type' => 'datetime',
+           'mysql_type' => 'DATETIME',
+           'pgsql_type' => 'timestamp without time zone', 
+           'sqlite_type' => 'VARCHAR', 
+           'sqlsrv_type' => 'smalldatetime',		   
+           'not null' => TRUE,
+		),	
+		'date_of_departure' => array(
+		   'description' => 'Date of guests\' departure',          
+           'type' => 'datetime',
+           'mysql_type' => 'DATETIME',
+           'pgsql_type' => 'timestamp without time zone', 
+           'sqlite_type' => 'VARCHAR', 
+           'sqlsrv_type' => 'smalldatetime',		   
+           'not null' => TRUE,
+		),		
+		'reservation_uid' => array(
+		   'description' => 'Reservation node unique identifier', 
+           'type' => 'varchar',  
+           'length' => 30,        
+           'not null' => TRUE,
+		),
+	 ),	
+	 'primary key' => array('rbid'),
+	 'indexes' => array(
+		'vupoint_reservations_rid' => array('rid'), 
+		'vupoint_reservations_available_date' => array('available_date'),
+		'zen_vupoint_room_bookings_uid' => array('reservation_uid'),
+     ), 
+  );
+  
+  $schema['zen_vupoint_booked_dates'] = array(
+     'description' => 'Stores each date for which a room is booked',
+	 'fields' => array(
+	    'rbdid' => array(
+		   'description' => 'The primary identifier for records in this table', 
+           'type' => 'serial', 
+           'unsigned' => TRUE, 
+           'not null' => TRUE,
+		),
+		'rid' => array(
+		   'description' => 'Room identifier. Foreign key is rid in Room table', 
+           'type' => 'int', 
+           'unsigned' => TRUE, 
+           'not null' => TRUE,
+		),
+		'rbid' => array(
+		   'description' => 'Room booking identifier. Foreign key is rbid in Room Bookings table', 
+           'type' => 'int', 
+           'unsigned' => TRUE, 
+           'not null' => TRUE,
+		),
+		'nid' => array(
+		   'description' => 'Reservation node identifier. Foreign key is rid in Reservations table', 
+           'type' => 'int', 
+           'unsigned' => TRUE, 
+           'not null' => TRUE,
+		),
+		'reservation_uid' => array(
+		   'description' => 'Reservation node unique identifier. Foreign key is rid in Reservations table', 
+           'type' => 'varchar',  
+           'length' => 30,        
+           'not null' => TRUE,
+		),
+		'booked_date' => array(
+		   'description' => 'Date that room is booked for',          
+           'type' => 'datetime',
+           'mysql_type' => 'DATETIME',
+           'pgsql_type' => 'timestamp without time zone', 
+           'sqlite_type' => 'VARCHAR', 
+           'sqlsrv_type' => 'smalldatetime',		   
+           'not null' => TRUE,
+		), 	
+        'confirmed' => array(
+		   'description' => 'Yes/No value indicating confirmed booking date', 
+           'type' => 'int',
+		   'unsigned' => TRUE,
+           'not null' => TRUE,
+           'default' => 0,
+           'size' => 'tiny',         
+		), 		
+	 ),	
+	 'primary key' => array('rbdid'),
+	 'indexes' => array(
+		'vupoint_booked_dates_rid' => array('rid'), 
+		'vupoint_booked_dates_rbid' => array('rbid'),
+		'vupoint_booked_dates_nid' => array('nid'), 
+		'vupoint_booked_dates_booked_date' => array('booked_date'),
+		'vupoint_booked_dates_res_uid' => array('reservation_uid'),
+     ), 
+  );
+  
+  $schema['zen_vupoint_cc_transaction'] = array(
+     'description' => 'Stores data returned by payment processor',
+	 'fields' => array(
+	    'tid' => array(
+		   'description' => 'The primary identifier for records in this table', 
+           'type' => 'serial', 
+           'unsigned' => TRUE, 
+           'not null' => TRUE,
+		),
+	    'ack' => array(
+		   'description' => 'Acknowledgment code: Success or Failure of transaction', 
+           'type' => 'varchar',  
+           'length' => 20,        
+           'not null' => TRUE,
+		),
+	    'transactionid' => array(
+		   'description' => 'The primary identifier for records returned from payment processor.', 
+           'type' => 'varchar',  
+           'length' => 30,        
+           'not null' => TRUE,
+		),
+		'create_date' => array(
+		   'description' => 'Date and time record was created',          
+           'type' => 'datetime',
+           'mysql_type' => 'DATETIME',
+           'pgsql_type' => 'timestamp without time zone', 
+           'sqlite_type' => 'VARCHAR', 
+           'sqlsrv_type' => 'smalldatetime',		   
+           'not null' => TRUE,
+		),
+		'AVSCode' => array(
+		   'description' => 'Address Verification System response code.', 
+           'type' => 'varchar',  
+           'length' => 5,        
+           'not null' => TRUE,
+		),
+		'CVV2Code' => array(
+		   'description' => 'Address Verification System response code.', 
+           'type' => 'varchar',  
+           'length' => 5,        
+           'not null' => TRUE,
+		),
+		'creditcardnumber' => array(
+		   'description' => 'Credit Card Number', 
+           'type' => 'varchar',  
+           'length' => 30,        
+           'not null' => TRUE,
+		),	
+        'creditcardtype' => array(
+		   'description' => 'Credit Card Type', 
+           'type' => 'varchar',  
+           'length' => 30,        
+           'not null' => TRUE,
+		),	
+        'creditcardexpyear' => array(
+		   'description' => 'Credit Card Expiration Year', 
+           'type' => 'int', 
+           'unsigned' => TRUE, 
+           'not null' => TRUE,
+		),	
+        'creditcardexpmonth' => array(
+		   'description' => 'Credit Card Expiration Month', 
+           'type' => 'int', 
+           'unsigned' => TRUE, 
+           'not null' => TRUE,
+		),		
+		'payername' => array(
+		   'description' => 'Credit Card Expiration Month', 
+           'type' => 'varchar',  
+           'length' => 100,        
+           'not null' => TRUE,
+		),
+		'amount' => array(
+		  'description' => 'Total amount paid by guest',  
+		  'type' => 'numeric', 
+		  'size' => 'normal', 
+		  'not null' => TRUE, 
+		  'default' => 0, 
+		  'precision' => 11, 
+		  'scale' => 3,
+		),
+        'nid' => array(
+          'description' => 'Node id from copied from Reservations table', 
+          'type' => 'int', 
+          'unsigned' => TRUE, 
+          'not null' => TRUE,        
+	    ),	
+	    'sid' => array(
+          'description' => 'Submission id from copied from Reservations table', 
+          'type' => 'int', 
+          'unsigned' => TRUE, 
+          'not null' => TRUE,        
+	    ),	
+        'currencyid' => array(
+		   'description' => 'Currency identifier for transaction e.g. CAD, USD', 
+           'type' => 'varchar',  
+           'length' => 10,
+		   'default' => 'USD',
+		   'not null' => TRUE, 
+		),	
+        'reservation_uid' => array(
+	       'description' => 'Reservation node unique identifier', 
+           'type' => 'varchar',  
+           'length' => 30,        
+           'not null' => TRUE,
+        ),
+	 ),	
+	 'primary key' => array('tid'),
+	 'indexes' => array(		
+		'vupoint_cc_transactionid' => array('transactionid'),
+		'vupoint_cc_trans_create_date' => array('create_date'),
+		'vupoint_cc_trans_nid' => array('nid'),
+		'vupoint_cc_trans_sid' => array('sid'),
+		'vupoint_reservations_res_uid' => array('reservation_uid'),
+     ), 
+   );
+   
+   $schema['zen_vupoint_cc_transaction_errors'] = array(
+     'description' => 'Stores error data returned by payment processor',
+	 'fields' => array(
+	    'eid' => array(
+		   'description' => 'The primary identifier for records in this table', 
+           'type' => 'serial', 
+           'unsigned' => TRUE, 
+           'not null' => TRUE,
+		),
+	    'transactionid' => array(
+		   'description' => 'The primary identifier for records returned from payment processor.', 
+           'type' => 'varchar',  
+           'length' => 30,        
+           'not null' => TRUE,
+		),
+		'create_date' => array(
+		   'description' => 'Date and time record was created',          
+           'type' => 'datetime',
+           'mysql_type' => 'DATETIME',
+           'pgsql_type' => 'timestamp without time zone', 
+           'sqlite_type' => 'VARCHAR', 
+           'sqlsrv_type' => 'smalldatetime',		   
+           'not null' => TRUE,
+		),				
+        'nid' => array(
+          'description' => 'Node id from copied from Reservations table', 
+          'type' => 'int', 
+          'unsigned' => TRUE, 
+          'not null' => TRUE,        
+	    ),	
+	    'sid' => array(
+          'description' => 'Submission id from copied from Reservations table', 
+          'type' => 'int', 
+          'unsigned' => TRUE, 
+          'not null' => TRUE,        
+	    ),	        
+		'error_shortmessage' => array(
+		   'description' => 'Short version of error text returned from payment processor', 
+           'type' => 'varchar',  
+           'length' => 255,
+		   'not null' => FALSE, 
+		), 
+        'error_longmessage' => array(
+		   'description' => 'Long version of error text returned from payment processor', 
+           'type' => 'varchar',  
+           'length' => 500,
+		   'not null' => FALSE, 
+		),	
+        'error_code' => array(
+		   'description' => 'Numeric error code returned', 
+           'type' => 'int', 
+           'unsigned' => TRUE, 
+           'not null' => FALSE, 
+		),
+        'error_severitycode' => array(
+		   'description' => 'Severity error code returned', 
+           'type' => 'varchar',  
+           'length' => 20,
+		   'not null' => FALSE,  
+		),		
+	 ),	
+	 'primary key' => array('eid'),
+	 'indexes' => array(		
+		'vupoint_cc_error_transactionid' => array('transactionid'),
+		'vupoint_cc_error_create_date' => array('create_date'),
+		'vupoint_cc_error_nid' => array('nid'),
+		'vupoint_cc_error_sid' => array('sid'),
+     ), 
+   );
+   
+   // zen_vupoint_blocked_dates
+   $schema['zen_vupoint_blocked_dates'] = array(
+     'description' => 'Track blocked dates',
+	 'fields' => array(
+	    'bdid' => array(
+		   'description' => 'The primary identifier for records in this table', 
+           'type' => 'serial', 
+           'unsigned' => TRUE, 
+           'not null' => TRUE,
+		),	   
+		'create_date' => array(
+		   'description' => 'Date and time record was created',          
+           'type' => 'datetime',
+           'mysql_type' => 'DATETIME',
+           'pgsql_type' => 'timestamp without time zone', 
+           'sqlite_type' => 'VARCHAR', 
+           'sqlsrv_type' => 'smalldatetime',		   
+           'not null' => TRUE,
+		),
+		'change_date' => array(
+		   'description' => 'Date and time record was last updated',          
+           'type' => 'datetime',
+           'mysql_type' => 'DATETIME',
+           'pgsql_type' => 'timestamp without time zone', 
+           'sqlite_type' => 'VARCHAR', 
+           'sqlsrv_type' => 'smalldatetime',		   
+           'not null' => TRUE,
+		),
+       'blocked_date' => array(
+		   'description' => 'Blocked date',          
+           'type' => 'datetime',
+           'mysql_type' => 'DATETIME',
+           'pgsql_type' => 'timestamp without time zone', 
+           'sqlite_type' => 'VARCHAR', 
+           'sqlsrv_type' => 'smalldatetime',		   
+           'not null' => TRUE,
+		),		
+        'blocked' => array(
+		   'description' => 'Yes/No value indicating blocked status', 
+           'type' => 'int',
+		   'unsigned' => TRUE,
+           'not null' => TRUE,
+           'default' => 1,
+           'size' => 'tiny',         
+		),	
+	    'nid' => array(
+          'description' => 'Node id of blocked date as seen in Availability Calendar', 
+          'type' => 'int', 
+          'unsigned' => TRUE, 
+          'not null' => TRUE,        
+	    ),	        	
+	 ),	
+	 'primary key' => array('bdid'),
+	 'indexes' => array(		
+		'vupoint_blocked_dates_blocked_date' => array('blocked_date'),
+		'vupoint_blocked_dates_nid' => array('nid'),
+     ), 
+   );
+   
+   $schema['zen_vupoint_country_list'] = array(
+     'description' => 'List of countries and country codes',
+	 'fields' => array(
+	    'cid' => array(
+		   'description' => 'The primary identifier for records in this table', 
+           'type' => 'serial', 
+           'unsigned' => TRUE, 
+           'not null' => TRUE,
+		),	   
+		'iso2' => array(
+		   'description' => 'ISO code (2 characters)', 
+           'type' => 'varchar',  
+           'length' => 3,
+		   'not null' => TRUE, 
+		), 	
+		'iso3' => array(
+		   'description' => 'ISO code (3 characters)', 
+           'type' => 'varchar',  
+           'length' => 4,
+		   'not null' => FALSE, 
+		), 
+		'country_name' => array(
+		   'description' => 'Name of country -- official?', 
+           'type' => 'varchar',  
+           'length' => 100,
+		   'not null' => TRUE, 
+		),
+		'country_name_friendly' => array(
+		   'description' => 'Name of country -- friendly?', 
+           'type' => 'varchar',  
+           'length' => 100,
+		   'not null' => TRUE, 
+		),
+		'num_code' => array(
+		   'description' => 'Number code', 
+           'type' => 'int', 
+           'unsigned' => TRUE, 
+		   'not null' => FALSE, 
+		),
+		'country_code' => array(
+		   'description' => 'Country code for telecommunications purposes', 
+           'type' => 'int', 
+           'unsigned' => TRUE, 
+		   'not null' => FALSE, 
+		),
+	 ),	
+	 'primary key' => array('cid'),
+	 'indexes' => array(		
+		'zen_vupoint_country_list_iso2' => array('iso2'),
+		'zen_vupoint_country_list_iso3' => array('iso3'),
+		'zen_vupoint_country_list_country_name' => array('country_name'),
+		'zen_vupoint_country_list_num_code' => array('num_code'),
+		'zen_vupoint_country_list_country_code' => array('country_code'),
+     ), 
+   );
+   
+   $schema['zen_vupoint_us_states'] = array(
+     'description' => 'List of US States names and abbreviations',
+	 'fields' => array(
+	    'sid' => array(
+		   'description' => 'The primary identifier for records in this table', 
+           'type' => 'serial', 
+           'unsigned' => TRUE, 
+           'not null' => TRUE,
+		),	   
+		'abbreviation' => array(
+		   'description' => '2 character abbreivation', 
+           'type' => 'varchar',  
+           'length' => 3,
+		   'not null' => TRUE, 
+		), 			
+		'state' => array(
+		   'description' => 'Name of state', 
+           'type' => 'varchar',  
+           'length' => 100,
+		   'not null' => TRUE, 
+		),		
+	 ),	
+	 'primary key' => array('sid'),
+	 'indexes' => array(		
+		'zen_vupoint_us_states_abbrev' => array('abbreviation'),
+		'zen_vupoint_us_state_name' => array('state'),
+     ), 
+   );
+   
+   $schema['zen_vupoint_canadian_provs'] = array(
+     'description' => 'List of Canadian Provinces names and abbreviations',
+	 'fields' => array(
+	    'cid' => array(
+		   'description' => 'The primary identifier for records in this table', 
+           'type' => 'serial', 
+           'unsigned' => TRUE, 
+           'not null' => TRUE,
+		),	   
+		'abbreviation' => array(
+		   'description' => '2 character abbreivation', 
+           'type' => 'varchar',  
+           'length' => 3,
+		   'not null' => TRUE, 
+		), 			
+		'province' => array(
+		   'description' => 'Name of province', 
+           'type' => 'varchar',  
+           'length' => 100,
+		   'not null' => TRUE, 
+		),		
+	 ),	
+	 'primary key' => array('cid'),
+	 'indexes' => array(		
+		'zen_vupoint_canadian_prov_abbrev' => array('abbreviation'),
+		'zen_vupoint_canadian_prov_name' => array('province'),
+     ), 
+   );
+   
+   return $schema;
+} 
+
+/**
+ * Update #1 posted 2013-06-20.
+ * Add new table 'zen_vupoint_booked_dates' to support date blocking function
+ */
+function webform_ext_update_7100()
+{
+   $schema['zen_vupoint_booked_dates'] = array(
+     'description' => 'Stores each date for which a room is booked',
+	 'fields' => array(
+	    'rbdid' => array(
+		   'description' => 'The primary identifier for records in this table', 
+           'type' => 'serial', 
+           'unsigned' => TRUE, 
+           'not null' => TRUE,
+		),
+		'rid' => array(
+		   'description' => 'Room identifier. Foreign key is rid in Room table', 
+           'type' => 'int', 
+           'unsigned' => TRUE, 
+           'not null' => TRUE,
+		),
+		'rbid' => array(
+		   'description' => 'Room booking identifier. Foreign key is rbid in Room Bookings table', 
+           'type' => 'int', 
+           'unsigned' => TRUE, 
+           'not null' => TRUE,
+		),
+		'nid' => array(
+		   'description' => 'Reservation node identifier. Foreign key is rid in Reservations table', 
+           'type' => 'int', 
+           'unsigned' => TRUE, 
+           'not null' => TRUE,
+		),
+		'booked_date' => array(
+		   'description' => 'Date that room is booked for',          
+           'type' => 'datetime',
+           'mysql_type' => 'DATETIME',
+           'pgsql_type' => 'timestamp without time zone', 
+           'sqlite_type' => 'VARCHAR', 
+           'sqlsrv_type' => 'smalldatetime',		   
+           'not null' => TRUE,
+		), 		
+	 ),	
+	 'primary key' => array('rbdid'),
+	 'indexes' => array(
+		'vupoint_booked_dates_rid' => array('rid'), 
+		'vupoint_booked_dates_rbid' => array('rbid'),
+		'vupoint_booked_dates_nid' => array('nid'), 
+		'vupoint_booked_dates_booked_date' => array('booked_date'),
+     ), 
+   );
+   
+   $ret = t('Table \'zen_vupoint_booked_dates\' created in database.');
+   db_create_table('zen_vupoint_booked_dates', $schema['zen_vupoint_booked_dates']);  
+   return $ret;
+}
+
+/**
+ * Update #2 posted 2013-06-20.
+ * Test return message from hook update
+ */
+function webform_ext_update_7101()
+{
+   $table_exists = db_table_exists('zen_vupoint_booked_dates');
+   if ($table_exists){
+	  $ret = t('Table \'zen_vupoint_booked_dates\' created in database.');
+   }else{
+      $ret = t('Table \'zen_vupoint_booked_dates\' not created in database.');
+   }
+   return $ret;
+}
+
+/**
+ * Update #2a posted 2013-06-21.
+ * Add new column 'private_amenities' to table 'zen_vupoint_rooms'
+ */
+function webform_ext_update_7102()
+{
+   $ret = t('New field \'private_amenities\' added to table \'zen_vupoint_rooms\'.');
+   $schema = array(
+      'description' => 'Yes/No value indicating availability of private amenities', 
+      'type' => 'int',
+	  'unsigned' => TRUE,
+      'not null' => TRUE,
+      'default' => 0,
+      'size' => 'tiny',         
+	);
+	db_add_field('zen_vupoint_rooms', 'private_amenities', $schema);
+	return $ret;
+}
+
+/**
+ * Update #3 posted 2013-06-24.
+ * Add new table zen_vupoint_cc_transaction'
+ */
+function webform_ext_update_7103()
+{
+   $schema['zen_vupoint_cc_transaction'] = array(
+     'description' => 'Stores data returned by payment processor',
+	 'fields' => array(
+	    'tid' => array(
+		   'description' => 'The primary identifier for records in this table', 
+           'type' => 'serial', 
+           'unsigned' => TRUE, 
+           'not null' => TRUE,
+		),
+	    'ack' => array(
+		   'description' => 'Acknowledgment code: Success or Failure of transaction', 
+           'type' => 'varchar',  
+           'length' => 20,        
+           'not null' => TRUE,
+		),
+	    'transactionid' => array(
+		   'description' => 'The primary identifier for records returned from payment processor.', 
+           'type' => 'varchar',  
+           'length' => 30,        
+           'not null' => TRUE,
+		),
+		'create_date' => array(
+		   'description' => 'Date and time record was created',          
+           'type' => 'datetime',
+           'mysql_type' => 'DATETIME',
+           'pgsql_type' => 'timestamp without time zone', 
+           'sqlite_type' => 'VARCHAR', 
+           'sqlsrv_type' => 'smalldatetime',		   
+           'not null' => TRUE,
+		),
+		'AVSCode' => array(
+		   'description' => 'Address Verification System response code.', 
+           'type' => 'varchar',  
+           'length' => 5,        
+           'not null' => TRUE,
+		),
+		'CVV2Code' => array(
+		   'description' => 'Address Verification System response code.', 
+           'type' => 'varchar',  
+           'length' => 5,        
+           'not null' => TRUE,
+		),
+		'creditcardnumber' => array(
+		   'description' => 'Credit Card Number', 
+           'type' => 'varchar',  
+           'length' => 30,        
+           'not null' => TRUE,
+		),	
+        'creditcardtype' => array(
+		   'description' => 'Credit Card Type', 
+           'type' => 'varchar',  
+           'length' => 30,        
+           'not null' => TRUE,
+		),	
+        'creditcardexpyear' => array(
+		   'description' => 'Credit Card Expiration Year', 
+           'type' => 'int', 
+           'unsigned' => TRUE, 
+           'not null' => TRUE,
+		),	
+        'creditcardexpmonth' => array(
+		   'description' => 'Credit Card Expiration Month', 
+           'type' => 'int', 
+           'unsigned' => TRUE, 
+           'not null' => TRUE,
+		),		
+		'payername' => array(
+		   'description' => 'Credit Card Expiration Month', 
+           'type' => 'varchar',  
+           'length' => 100,        
+           'not null' => TRUE,
+		),
+		'amount' => array(
+		  'description' => 'Total amount paid by guest',  
+		  'type' => 'numeric', 
+		  'size' => 'normal', 
+		  'not null' => TRUE, 
+		  'default' => 0, 
+		  'precision' => 11, 
+		  'scale' => 3,
+		),					
+	 ),	
+	 'primary key' => array('tid'),
+	 'indexes' => array(
+		'vupoint_pp_session_transactionid' => array('transactionid'),
+		'vupoint_pp_session_create_date' => array('create_date'),
+     ), 
+   );
+   $ret = t('Table \'zen_vupoint_cc_transaction\' created in database.');
+   db_create_table('zen_vupoint_cc_transaction', $schema['zen_vupoint_cc_transaction']);  
+   return $ret;
+}
+
+/**
+ * Update #4 posted 2013-06-25.
+ * Add new columns 'nid' and 'sid' to table zen_vupoint_cc_transaction'
+ */
+function webform_ext_update_7104()
+{
+   $ret = t('New columns added to table \'zen_vupoint_cc_transaction\'.');
+   
+   $schema = array(
+      'description' => 'Node id from copied from Reservations table', 
+      'type' => 'int', 
+      'unsigned' => TRUE, 
+      'not null' => TRUE,        
+	);
+	db_add_field('zen_vupoint_cc_transaction', 'nid', $schema);
+	
+	$schema = array(
+      'description' => 'Submission id from copied from Reservations table', 
+      'type' => 'int', 
+      'unsigned' => TRUE, 
+      'not null' => TRUE,        
+	);
+	db_add_field('zen_vupoint_cc_transaction', 'sid', $schema);
+	return $ret;
+}
+ 
+
+/**
+ * Update #5 posted 2013-06-25.
+ * Add new indexes to table zen_vupoint_cc_transaction'
+ */
+function webform_ext_update_7105(){
+   $ret = t('New indexes added to table \'zen_vupoint_cc_transaction\'.');
+   db_add_index('zen_vupoint_cc_transaction', 'vupoint_pp_session_nid', array('nid',));
+   db_add_index('zen_vupoint_cc_transaction', 'vupoint_pp_session_sid', array('sid',));
+   return $ret;
+} 
+
+/**
+ * Update #6 posted 2013-06-27.
+ * Create table zen_vupoint_cc_transaction_errors'
+ */
+function webform_ext_update_7106()
+{
+   $ret = t('Created table \'zen_vupoint_cc_transaction_errors\'.');
+   
+   $schema = array(
+     'description' => 'Stores error data returned by payment processor',
+	 'fields' => array(
+	    'eid' => array(
+		   'description' => 'The primary identifier for records in this table', 
+           'type' => 'serial', 
+           'unsigned' => TRUE, 
+           'not null' => TRUE,
+		),
+	    'transactionid' => array(
+		   'description' => 'The primary identifier for records returned from payment processor.', 
+           'type' => 'varchar',  
+           'length' => 30,        
+           'not null' => TRUE,
+		),
+		'create_date' => array(
+		   'description' => 'Date and time record was created',          
+           'type' => 'datetime',
+           'mysql_type' => 'DATETIME',
+           'pgsql_type' => 'timestamp without time zone', 
+           'sqlite_type' => 'VARCHAR', 
+           'sqlsrv_type' => 'smalldatetime',		   
+           'not null' => TRUE,
+		),				
+        'nid' => array(
+          'description' => 'Node id from copied from Reservations table', 
+          'type' => 'int', 
+          'unsigned' => TRUE, 
+          'not null' => TRUE,        
+	    ),	
+	    'sid' => array(
+          'description' => 'Submission id from copied from Reservations table', 
+          'type' => 'int', 
+          'unsigned' => TRUE, 
+          'not null' => TRUE,        
+	    ),	        
+		'error_shortmessage' => array(
+		   'description' => 'Short version of error text returned from payment processor', 
+           'type' => 'varchar',  
+           'length' => 255,
+		   'not null' => FALSE, 
+		), 
+        'error_longmessage' => array(
+		   'description' => 'Long version of error text returned from payment processor', 
+           'type' => 'varchar',  
+           'length' => 500,
+		   'not null' => FALSE, 
+		),	
+        'error_code' => array(
+		   'description' => 'Numeric error code returned', 
+           'type' => 'int', 
+           'unsigned' => TRUE, 
+           'not null' => FALSE, 
+		),
+        'error_severitycode' => array(
+		   'description' => 'Severity error code returned', 
+           'type' => 'varchar',  
+           'length' => 20,
+		   'not null' => FALSE,  
+		),		
+	 ),	
+	 'primary key' => array('eid'),
+	 'indexes' => array(		
+		'vupoint_pp_error_transactionid' => array('transactionid'),
+		'vupoint_pp_error_create_date' => array('create_date'),
+		'vupoint_pp_error_nid' => array('nid'),
+		'vupoint_pp_error_sid' => array('sid'),
+     ), 
+   );
+
+	db_create_table('zen_vupoint_cc_transaction_errors', $schema);
+	
+	return $ret;
+} 
+
+/**
+ * Update #7 posted 2013-06-27.
+ * Add new column to table zen_vupoint_reservations'
+ */
+function webform_ext_update_7107()
+{
+  $ret = t('New column added to table \'zen_vupoint_reservations\'.');
+  
+  $schema = array(
+     'description' => 'Success or failure of reservation request', 
+     'type' => 'varchar',  
+     'length' => 20,
+	 'default' => 'UNKNOWN',
+	 'not null' => TRUE,          
+  );
+  
+  db_add_field('zen_vupoint_reservations', 'request_status', $schema);
+  
+  return $ret;  
+}
+
+/**
+ * Update #8 posted 2013-06-27.
+ * Rename indexes on table zen_vupoint_cc_transaction'
+ */
+function webform_ext_update_7108()
+{
+  $ret = t('Rename indexes on table \'zen_vupoint_cc_transaction\'.');
+  
+  $table = 'zen_vupoint_cc_transaction';
+  
+  db_drop_index($table, 'vupoint_pp_session_transactionid');
+  db_drop_index($table, 'vupoint_pp_session_create_date');
+  db_drop_index($table, 'vupoint_pp_session_nid');
+  db_drop_index($table, 'vupoint_pp_session_sid');
+  
+  db_add_index($table, 'vupoint_cc_transactionid', array('transactionid'));
+  db_add_index($table, 'vupoint_cc_trans_create_date', array('create_date'));
+  db_add_index($table, 'vupoint_cc_trans_nid', array('nid'));
+  db_add_index($table, 'vupoint_cc_trans_sid', array('sid'));
+  
+  return $ret;  
+}
+
+/**
+ * Update #9 posted 2013-06-27.
+ * Add new column to table zen_vupoint_cc_transaction'
+ */
+function webform_ext_update_7109()
+{
+   $ret = t('New column added to table \'zen_vupoint_cc_transaction\'.');
+   
+   $schema = array(
+      'description' => 'Currency identifier for transaction e.g. CAD, USD', 
+      'type' => 'varchar',  
+      'length' => 10,
+	  'default' => 'USD',
+	  'not null' => TRUE,           
+   );
+   
+   db_add_field('zen_vupoint_cc_transaction', 'currencyid', $schema);
+   
+   return $ret;  
+}
+
+/**
+ * Update #10 posted 2013-07-01.
+ * Create table zen_vupoint_blocked_dates'
+ */
+function webform_ext_update_7110()
+{
+   $ret = t('Created table \'zen_vupoint_blocked_dates\'.');
+   
+   $schema = array(
+     'description' => 'Track blocked dates',
+	 'fields' => array(
+	    'bdid' => array(
+		   'description' => 'The primary identifier for records in this table', 
+           'type' => 'serial', 
+           'unsigned' => TRUE, 
+           'not null' => TRUE,
+		),	   
+		'create_date' => array(
+		   'description' => 'Date and time record was created',          
+           'type' => 'datetime',
+           'mysql_type' => 'DATETIME',
+           'pgsql_type' => 'timestamp without time zone', 
+           'sqlite_type' => 'VARCHAR', 
+           'sqlsrv_type' => 'smalldatetime',		   
+           'not null' => TRUE,
+		),
+		'change_date' => array(
+		   'description' => 'Date and time record was last updated',          
+           'type' => 'datetime',
+           'mysql_type' => 'DATETIME',
+           'pgsql_type' => 'timestamp without time zone', 
+           'sqlite_type' => 'VARCHAR', 
+           'sqlsrv_type' => 'smalldatetime',		   
+           'not null' => TRUE,
+		),
+       'blocked_date' => array(
+		   'description' => 'Blocked date',          
+           'type' => 'datetime',
+           'mysql_type' => 'DATETIME',
+           'pgsql_type' => 'timestamp without time zone', 
+           'sqlite_type' => 'VARCHAR', 
+           'sqlsrv_type' => 'smalldatetime',		   
+           'not null' => TRUE,
+		),		
+        'blocked' => array(
+		   'description' => 'Yes/No value indicating blocked status', 
+           'type' => 'int',
+		   'unsigned' => TRUE,
+           'not null' => TRUE,
+           'default' => 1,
+           'size' => 'tiny',         
+		),	
+	    'nid' => array(
+          'description' => 'Node id of blocked date as seen in Availability Calendar', 
+          'type' => 'int', 
+          'unsigned' => TRUE, 
+          'not null' => TRUE,        
+	    ),	        	
+	 ),	
+	 'primary key' => array('bdid'),
+	 'indexes' => array(		
+		'vupoint_blocked_dates_blocked_date' => array('blocked_date'),
+		'vupoint_blocked_dates_nid' => array('nid'),
+     ), 
+    );
+
+	db_create_table('zen_vupoint_blocked_dates', $schema);
+	
+	return $ret;
+} 
+
+/**
+ * Update #11 posted 2013-07-06.
+ * Add new column to table zen_vupoint_reservations'
+ */
+function webform_ext_update_7111()
+{
+   $ret = t('New column added to table \'zen_vupoint_reservations\'.');
+   
+   $schema = array(
+	  'description' => 'Room type selection', 
+      'type' => 'varchar',  
+      'length' => 10,
+	  'not null' => TRUE,
+	);
+   
+   db_add_field('zen_vupoint_reservations', 'room_type', $schema);
+   
+   return $ret;  
+}
+
+/**
+ * Update #12 posted 2013-07-08.
+ * Add new column to table zen_vupoint_reservations'
+ */
+function webform_ext_update_7112()
+{
+   $ret = t('New column added to table \'zen_vupoint_reservations\'.');
+   
+   $init_val = uniqid('VP', TRUE);
+   
+   $schema = array(
+	   'description' => 'Reservation node unique identifier', 
+       'type' => 'varchar',  
+       'length' => 30,        
+       'not null' => TRUE,
+	   'initial' => $init_val,
+	);
+	
+	$keys_new = array(
+      'indexes' => array(
+	     'zen_vupoint_reservations_res_uid' => array('reservation_uid'),
+      ),
+    );
+   
+   db_add_field('zen_vupoint_reservations', 'reservation_uid', $schema, $keys_new);
+   
+   return $ret;  
+}
+
+/**
+ * Update #13 posted 2013-07-08.
+ * Add new column to table zen_vupoint_booked_dates'
+ */
+function webform_ext_update_7113()
+{
+   $ret = t('New column added to table \'zen_vupoint_booked_dates\'.');
+   
+   $init_val = uniqid('VP', TRUE);
+   
+   $schema = array(
+	   'description' => 'Reservation node unique identifier', 
+       'type' => 'varchar',  
+       'length' => 30,        
+       'not null' => TRUE,
+	   'initial' => $init_val,
+	);
+   
+   $keys_new = array(
+      'indexes' => array(
+	     'zen_vupoint_booked_dates_res_uid' => array('reservation_uid'),
+      ),
+   );
+   
+   db_add_field('zen_vupoint_booked_dates', 'reservation_uid', $schema, $keys_new);
+   
+   return $ret;  
+}
+
+/**
+ * Update #14 posted 2013-07-12.
+ * Add new column to table zen_vupoint_country_list'
+ */
+function webform_ext_update_7114()
+{
+
+   $ret = t('New table \'zen_vupoint_country_list\' added to database.');
+   
+   $schema = array(
+     'description' => 'List of countries and country codes',
+	 'fields' => array(
+	    'cid' => array(
+		   'description' => 'The primary identifier for records in this table', 
+           'type' => 'serial', 
+           'unsigned' => TRUE, 
+           'not null' => TRUE,
+		),	   
+		'iso2' => array(
+		   'description' => 'ISO code 2 characters', 
+           'type' => 'varchar',  
+           'length' => 3,
+		   'not null' => TRUE, 
+		), 	
+		'iso3' => array(
+		   'description' => 'ISO code 3 characters', 
+           'type' => 'varchar',  
+           'length' => 4,
+		   'not null' => FALSE, 
+		), 
+		'country_name' => array(
+		   'description' => 'Name of country -- official?', 
+           'type' => 'varchar',  
+           'length' => 100,
+		   'not null' => TRUE, 
+		),
+		'country_name_friendly' => array(
+		   'description' => 'Name of country -- friendly?', 
+           'type' => 'varchar',  
+           'length' => 100,
+		   'not null' => TRUE, 
+		),
+		'num_code' => array(
+		   'description' => 'Number code', 
+           'type' => 'int', 
+           'unsigned' => TRUE, 
+		   'not null' => FALSE, 
+		),
+		'country_code' => array(
+		   'description' => 'Country code for telecommunications purposes', 
+           'type' => 'int', 
+           'unsigned' => TRUE, 
+		   'not null' => FALSE, 
+		),	
+	 ),	
+	 'primary key' => array('cid'),
+	 'indexes' => array(		
+		'zen_vupoint_country_list_iso2' => array('iso2'),
+		'zen_vupoint_country_list_iso3' => array('iso3'),
+		'zen_vupoint_country_list_country_name' => array('country_name'),
+		'zen_vupoint_country_list_num_code' => array('num_code'),
+		'zen_vupoint_country_list_country_code' => array('country_code'),
+     ), 
+   );
+   
+   db_create_table('zen_vupoint_country_list', $schema);
+   
+   return $ret;
+   
+}
+
+/**
+ * Update #15 posted 2013-07-12.
+ * Insert data into table 'zen_vupoint_country_list'
+ */
+function webform_ext_update_7115()
+{
+   $ret = t('Data inserted country data into \'zen_vupoint_country_list\'.');
+
+   return $ret;   
+}
+
+/**
+ * Update #16 posted 2013-07-13.
+ * Insert data into table 'zen_vupoint_country_list'
+ */
+function webform_ext_update_7116()
+{
+   $ret = t('Records added to \'zen_vupoint_country_list\' table.');
+   
+$sql = <<<'DML'
+INSERT INTO zen_vupoint_country_list (`iso2`, `country_name`, `country_name_friendly`, `iso3`, `num_code`, `country_code`) VALUES
+('AF', 'AFGHANISTAN', 'Afghanistan', 'AFG', 4, 93),
+('AL', 'ALBANIA', 'Albania', 'ALB', 8, 355),
+('DZ', 'ALGERIA', 'Algeria', 'DZA', 12, 213),
+('AS', 'AMERICAN SAMOA', 'American Samoa', 'ASM', 16, 1684),
+('AD', 'ANDORRA', 'Andorra', 'AND', 20, 376),
+('AO', 'ANGOLA', 'Angola', 'AGO', 24, 244),
+('AI', 'ANGUILLA', 'Anguilla', 'AIA', 660, 1264),
+('AQ', 'ANTARCTICA', 'Antarctica', NULL, NULL, 0),
+('AG', 'ANTIGUA AND BARBUDA', 'Antigua and Barbuda', 'ATG', 28, 1268),
+('AR', 'ARGENTINA', 'Argentina', 'ARG', 32, 54),
+('AM', 'ARMENIA', 'Armenia', 'ARM', 51, 374),
+('AW', 'ARUBA', 'Aruba', 'ABW', 533, 297),
+('AU', 'AUSTRALIA', 'Australia', 'AUS', 36, 61),
+('AT', 'AUSTRIA', 'Austria', 'AUT', 40, 43),
+('AZ', 'AZERBAIJAN', 'Azerbaijan', 'AZE', 31, 994),
+('BS', 'BAHAMAS', 'Bahamas', 'BHS', 44, 1242),
+('BH', 'BAHRAIN', 'Bahrain', 'BHR', 48, 973),
+('BD', 'BANGLADESH', 'Bangladesh', 'BGD', 50, 880),
+('BB', 'BARBADOS', 'Barbados', 'BRB', 52, 1246),
+('BY', 'BELARUS', 'Belarus', 'BLR', 112, 375),
+('BE', 'BELGIUM', 'Belgium', 'BEL', 56, 32),
+('BZ', 'BELIZE', 'Belize', 'BLZ', 84, 501),
+('BJ', 'BENIN', 'Benin', 'BEN', 204, 229),
+('BM', 'BERMUDA', 'Bermuda', 'BMU', 60, 1441),
+('BT', 'BHUTAN', 'Bhutan', 'BTN', 64, 975),
+('BO', 'BOLIVIA', 'Bolivia', 'BOL', 68, 591),
+('BA', 'BOSNIA AND HERZEGOVINA', 'Bosnia and Herzegovina', 'BIH', 70, 387),
+('BW', 'BOTSWANA', 'Botswana', 'BWA', 72, 267),
+('BV', 'BOUVET ISLAND', 'Bouvet Island', NULL, NULL, 0),
+('BR', 'BRAZIL', 'Brazil', 'BRA', 76, 55),
+('IO', 'BRITISH INDIAN OCEAN TERRITORY', 'British Indian Ocean Territory', NULL, NULL, 246),
+('BN', 'BRUNEI DARUSSALAM', 'Brunei Darussalam', 'BRN', 96, 673),
+('BG', 'BULGARIA', 'Bulgaria', 'BGR', 100, 359),
+('BF', 'BURKINA FASO', 'Burkina Faso', 'BFA', 854, 226),
+('BI', 'BURUNDI', 'Burundi', 'BDI', 108, 257),
+('KH', 'CAMBODIA', 'Cambodia', 'KHM', 116, 855),
+('CM', 'CAMEROON', 'Cameroon', 'CMR', 120, 237),
+('CA', 'CANADA', 'Canada', 'CAN', 124, 1),
+('CV', 'CAPE VERDE', 'Cape Verde', 'CPV', 132, 238),
+('KY', 'CAYMAN ISLANDS', 'Cayman Islands', 'CYM', 136, 1345),
+('CF', 'CENTRAL AFRICAN REPUBLIC', 'Central African Republic', 'CAF', 140, 236),
+('TD', 'CHAD', 'Chad', 'TCD', 148, 235),
+('CL', 'CHILE', 'Chile', 'CHL', 152, 56),
+('CN', 'CHINA', 'China', 'CHN', 156, 86),
+('CX', 'CHRISTMAS ISLAND', 'Christmas Island', NULL, NULL, 61),
+('CC', 'COCOS (KEELING) ISLANDS', 'Cocos (Keeling) Islands', NULL, NULL, 672),
+('CO', 'COLOMBIA', 'Colombia', 'COL', 170, 57),
+('KM', 'COMOROS', 'Comoros', 'COM', 174, 269),
+('CG', 'CONGO', 'Congo', 'COG', 178, 242),
+('CD', 'CONGO, THE DEMOCRATIC REPUBLIC OF THE', 'Congo, the Democratic Republic of the', 'COD', 180, 242),
+('CK', 'COOK ISLANDS', 'Cook Islands', 'COK', 184, 682),
+('CR', 'COSTA RICA', 'Costa Rica', 'CRI', 188, 506),
+('CI', 'COTE D''IVOIRE', 'Cote D''Ivoire', 'CIV', 384, 225),
+('HR', 'CROATIA', 'Croatia', 'HRV', 191, 385),
+('CU', 'CUBA', 'Cuba', 'CUB', 192, 53),
+('CY', 'CYPRUS', 'Cyprus', 'CYP', 196, 357),
+('CZ', 'CZECH REPUBLIC', 'Czech Republic', 'CZE', 203, 420),
+('DK', 'DENMARK', 'Denmark', 'DNK', 208, 45),
+('DJ', 'DJIBOUTI', 'Djibouti', 'DJI', 262, 253),
+('DM', 'DOMINICA', 'Dominica', 'DMA', 212, 1767),
+('DO', 'DOMINICAN REPUBLIC', 'Dominican Republic', 'DOM', 214, 1809),
+('EC', 'ECUADOR', 'Ecuador', 'ECU', 218, 593),
+('EG', 'EGYPT', 'Egypt', 'EGY', 818, 20),
+('SV', 'EL SALVADOR', 'El Salvador', 'SLV', 222, 503),
+('GQ', 'EQUATORIAL GUINEA', 'Equatorial Guinea', 'GNQ', 226, 240),
+('ER', 'ERITREA', 'Eritrea', 'ERI', 232, 291),
+('EE', 'ESTONIA', 'Estonia', 'EST', 233, 372),
+('ET', 'ETHIOPIA', 'Ethiopia', 'ETH', 231, 251),
+('FK', 'FALKLAND ISLANDS (MALVINAS)', 'Falkland Islands (Malvinas)', 'FLK', 238, 500),
+('FO', 'FAROE ISLANDS', 'Faroe Islands', 'FRO', 234, 298),
+('FJ', 'FIJI', 'Fiji', 'FJI', 242, 679),
+('FI', 'FINLAND', 'Finland', 'FIN', 246, 358),
+('FR', 'FRANCE', 'France', 'FRA', 250, 33),
+('GF', 'FRENCH GUIANA', 'French Guiana', 'GUF', 254, 594),
+('PF', 'FRENCH POLYNESIA', 'French Polynesia', 'PYF', 258, 689),
+('TF', 'FRENCH SOUTHERN TERRITORIES', 'French Southern Territories', NULL, NULL, 0),
+('GA', 'GABON', 'Gabon', 'GAB', 266, 241),
+('GM', 'GAMBIA', 'Gambia', 'GMB', 270, 220),
+('GE', 'GEORGIA', 'Georgia', 'GEO', 268, 995),
+('DE', 'GERMANY', 'Germany', 'DEU', 276, 49),
+('GH', 'GHANA', 'Ghana', 'GHA', 288, 233),
+('GI', 'GIBRALTAR', 'Gibraltar', 'GIB', 292, 350),
+('GR', 'GREECE', 'Greece', 'GRC', 300, 30),
+('GL', 'GREENLAND', 'Greenland', 'GRL', 304, 299),
+('GD', 'GRENADA', 'Grenada', 'GRD', 308, 1473),
+('GP', 'GUADELOUPE', 'Guadeloupe', 'GLP', 312, 590),
+('GU', 'GUAM', 'Guam', 'GUM', 316, 1671),
+('GT', 'GUATEMALA', 'Guatemala', 'GTM', 320, 502),
+('GN', 'GUINEA', 'Guinea', 'GIN', 324, 224),
+('GW', 'GUINEA-BISSAU', 'Guinea-Bissau', 'GNB', 624, 245),
+('GY', 'GUYANA', 'Guyana', 'GUY', 328, 592),
+('HT', 'HAITI', 'Haiti', 'HTI', 332, 509),
+('HM', 'HEARD ISLAND AND MCDONALD ISLANDS', 'Heard Island and Mcdonald Islands', NULL, NULL, 0),
+('VA', 'HOLY SEE (VATICAN CITY STATE)', 'Holy See (Vatican City State)', 'VAT', 336, 39),
+('HN', 'HONDURAS', 'Honduras', 'HND', 340, 504),
+('HK', 'HONG KONG', 'Hong Kong', 'HKG', 344, 852),
+('HU', 'HUNGARY', 'Hungary', 'HUN', 348, 36),
+('IS', 'ICELAND', 'Iceland', 'ISL', 352, 354),
+('IN', 'INDIA', 'India', 'IND', 356, 91),
+('ID', 'INDONESIA', 'Indonesia', 'IDN', 360, 62),
+('IR', 'IRAN, ISLAMIC REPUBLIC OF', 'Iran, Islamic Republic of', 'IRN', 364, 98),
+('IQ', 'IRAQ', 'Iraq', 'IRQ', 368, 964),
+('IE', 'IRELAND', 'Ireland', 'IRL', 372, 353),
+('IL', 'ISRAEL', 'Israel', 'ISR', 376, 972),
+('IT', 'ITALY', 'Italy', 'ITA', 380, 39),
+('JM', 'JAMAICA', 'Jamaica', 'JAM', 388, 1876),
+('JP', 'JAPAN', 'Japan', 'JPN', 392, 81),
+('JO', 'JORDAN', 'Jordan', 'JOR', 400, 962),
+('KZ', 'KAZAKHSTAN', 'Kazakhstan', 'KAZ', 398, 7),
+('KE', 'KENYA', 'Kenya', 'KEN', 404, 254),
+('KI', 'KIRIBATI', 'Kiribati', 'KIR', 296, 686),
+('KP', 'KOREA, DEMOCRATIC PEOPLE''S REPUBLIC OF', 'Korea, Democratic People''s Republic of', 'PRK', 408, 850),
+('KR', 'KOREA, REPUBLIC OF', 'Korea, Republic of', 'KOR', 410, 82),
+('KW', 'KUWAIT', 'Kuwait', 'KWT', 414, 965),
+('KG', 'KYRGYZSTAN', 'Kyrgyzstan', 'KGZ', 417, 996),
+('LA', 'LAO PEOPLE''S DEMOCRATIC REPUBLIC', 'Lao People''s Democratic Republic', 'LAO', 418, 856),
+('LV', 'LATVIA', 'Latvia', 'LVA', 428, 371),
+('LB', 'LEBANON', 'Lebanon', 'LBN', 422, 961),
+('LS', 'LESOTHO', 'Lesotho', 'LSO', 426, 266),
+('LR', 'LIBERIA', 'Liberia', 'LBR', 430, 231),
+('LY', 'LIBYAN ARAB JAMAHIRIYA', 'Libyan Arab Jamahiriya', 'LBY', 434, 218),
+('LI', 'LIECHTENSTEIN', 'Liechtenstein', 'LIE', 438, 423),
+('LT', 'LITHUANIA', 'Lithuania', 'LTU', 440, 370),
+('LU', 'LUXEMBOURG', 'Luxembourg', 'LUX', 442, 352),
+('MO', 'MACAO', 'Macao', 'MAC', 446, 853),
+('MK', 'MACEDONIA, THE FORMER YUGOSLAV REPUBLIC OF', 'Macedonia, the Former Yugoslav Republic of', 'MKD', 807, 389),
+('MG', 'MADAGASCAR', 'Madagascar', 'MDG', 450, 261),
+('MW', 'MALAWI', 'Malawi', 'MWI', 454, 265),
+('MY', 'MALAYSIA', 'Malaysia', 'MYS', 458, 60),
+('MV', 'MALDIVES', 'Maldives', 'MDV', 462, 960),
+('ML', 'MALI', 'Mali', 'MLI', 466, 223),
+('MT', 'MALTA', 'Malta', 'MLT', 470, 356),
+('MH', 'MARSHALL ISLANDS', 'Marshall Islands', 'MHL', 584, 692),
+('MQ', 'MARTINIQUE', 'Martinique', 'MTQ', 474, 596),
+('MR', 'MAURITANIA', 'Mauritania', 'MRT', 478, 222),
+('MU', 'MAURITIUS', 'Mauritius', 'MUS', 480, 230),
+('YT', 'MAYOTTE', 'Mayotte', NULL, NULL, 269),
+('MX', 'MEXICO', 'Mexico', 'MEX', 484, 52),
+('FM', 'MICRONESIA, FEDERATED STATES OF', 'Micronesia, Federated States of', 'FSM', 583, 691),
+('MD', 'MOLDOVA, REPUBLIC OF', 'Moldova, Republic of', 'MDA', 498, 373),
+('MC', 'MONACO', 'Monaco', 'MCO', 492, 377),
+('MN', 'MONGOLIA', 'Mongolia', 'MNG', 496, 976),
+('MS', 'MONTSERRAT', 'Montserrat', 'MSR', 500, 1664),
+('MA', 'MOROCCO', 'Morocco', 'MAR', 504, 212),
+('MZ', 'MOZAMBIQUE', 'Mozambique', 'MOZ', 508, 258),
+('MM', 'MYANMAR', 'Myanmar', 'MMR', 104, 95),
+('NA', 'NAMIBIA', 'Namibia', 'NAM', 516, 264),
+('NR', 'NAURU', 'Nauru', 'NRU', 520, 674),
+('NP', 'NEPAL', 'Nepal', 'NPL', 524, 977),
+('NL', 'NETHERLANDS', 'Netherlands', 'NLD', 528, 31),
+('AN', 'NETHERLANDS ANTILLES', 'Netherlands Antilles', 'ANT', 530, 599),
+('NC', 'NEW CALEDONIA', 'New Caledonia', 'NCL', 540, 687),
+('NZ', 'NEW ZEALAND', 'New Zealand', 'NZL', 554, 64),
+('NI', 'NICARAGUA', 'Nicaragua', 'NIC', 558, 505),
+('NE', 'NIGER', 'Niger', 'NER', 562, 227),
+('NG', 'NIGERIA', 'Nigeria', 'NGA', 566, 234),
+('NU', 'NIUE', 'Niue', 'NIU', 570, 683),
+('NF', 'NORFOLK ISLAND', 'Norfolk Island', 'NFK', 574, 672),
+('MP', 'NORTHERN MARIANA ISLANDS', 'Northern Mariana Islands', 'MNP', 580, 1670),
+('NO', 'NORWAY', 'Norway', 'NOR', 578, 47),
+('OM', 'OMAN', 'Oman', 'OMN', 512, 968),
+('PK', 'PAKISTAN', 'Pakistan', 'PAK', 586, 92),
+('PW', 'PALAU', 'Palau', 'PLW', 585, 680),
+('PS', 'PALESTINIAN TERRITORY, OCCUPIED', 'Palestinian Territory, Occupied', NULL, NULL, 970),
+('PA', 'PANAMA', 'Panama', 'PAN', 591, 507),
+('PG', 'PAPUA NEW GUINEA', 'Papua New Guinea', 'PNG', 598, 675),
+('PY', 'PARAGUAY', 'Paraguay', 'PRY', 600, 595),
+('PE', 'PERU', 'Peru', 'PER', 604, 51),
+('PH', 'PHILIPPINES', 'Philippines', 'PHL', 608, 63),
+('PN', 'PITCAIRN', 'Pitcairn', 'PCN', 612, 0),
+('PL', 'POLAND', 'Poland', 'POL', 616, 48),
+('PT', 'PORTUGAL', 'Portugal', 'PRT', 620, 351),
+('PR', 'PUERTO RICO', 'Puerto Rico', 'PRI', 630, 1787),
+('QA', 'QATAR', 'Qatar', 'QAT', 634, 974),
+('RE', 'REUNION', 'Reunion', 'REU', 638, 262),
+('RO', 'ROMANIA', 'Romania', 'ROM', 642, 40),
+('RU', 'RUSSIAN FEDERATION', 'Russian Federation', 'RUS', 643, 70),
+('RW', 'RWANDA', 'Rwanda', 'RWA', 646, 250),
+('SH', 'SAINT HELENA', 'Saint Helena', 'SHN', 654, 290),
+('KN', 'SAINT KITTS AND NEVIS', 'Saint Kitts and Nevis', 'KNA', 659, 1869),
+('LC', 'SAINT LUCIA', 'Saint Lucia', 'LCA', 662, 1758),
+('PM', 'SAINT PIERRE AND MIQUELON', 'Saint Pierre and Miquelon', 'SPM', 666, 508),
+('VC', 'SAINT VINCENT AND THE GRENADINES', 'Saint Vincent and the Grenadines', 'VCT', 670, 1784),
+('WS', 'SAMOA', 'Samoa', 'WSM', 882, 684),
+('SM', 'SAN MARINO', 'San Marino', 'SMR', 674, 378),
+('ST', 'SAO TOME AND PRINCIPE', 'Sao Tome and Principe', 'STP', 678, 239),
+('SA', 'SAUDI ARABIA', 'Saudi Arabia', 'SAU', 682, 966),
+('SN', 'SENEGAL', 'Senegal', 'SEN', 686, 221),
+('CS', 'SERBIA AND MONTENEGRO', 'Serbia and Montenegro', NULL, NULL, 381),
+('SC', 'SEYCHELLES', 'Seychelles', 'SYC', 690, 248),
+('SL', 'SIERRA LEONE', 'Sierra Leone', 'SLE', 694, 232),
+('SG', 'SINGAPORE', 'Singapore', 'SGP', 702, 65),
+('SK', 'SLOVAKIA', 'Slovakia', 'SVK', 703, 421),
+('SI', 'SLOVENIA', 'Slovenia', 'SVN', 705, 386),
+('SB', 'SOLOMON ISLANDS', 'Solomon Islands', 'SLB', 90, 677),
+('SO', 'SOMALIA', 'Somalia', 'SOM', 706, 252),
+('ZA', 'SOUTH AFRICA', 'South Africa', 'ZAF', 710, 27),
+('GS', 'SOUTH GEORGIA AND THE SOUTH SANDWICH ISLANDS', 'South Georgia and the South Sandwich Islands', NULL, NULL, 0),
+('ES', 'SPAIN', 'Spain', 'ESP', 724, 34),
+('LK', 'SRI LANKA', 'Sri Lanka', 'LKA', 144, 94),
+('SD', 'SUDAN', 'Sudan', 'SDN', 736, 249),
+('SR', 'SURINAME', 'Suriname', 'SUR', 740, 597),
+('SJ', 'SVALBARD AND JAN MAYEN', 'Svalbard and Jan Mayen', 'SJM', 744, 47),
+('SZ', 'SWAZILAND', 'Swaziland', 'SWZ', 748, 268),
+('SE', 'SWEDEN', 'Sweden', 'SWE', 752, 46),
+('CH', 'SWITZERLAND', 'Switzerland', 'CHE', 756, 41),
+('SY', 'SYRIAN ARAB REPUBLIC', 'Syrian Arab Republic', 'SYR', 760, 963),
+('TW', 'TAIWAN, PROVINCE OF CHINA', 'Taiwan, Province of China', 'TWN', 158, 886),
+('TJ', 'TAJIKISTAN', 'Tajikistan', 'TJK', 762, 992),
+('TZ', 'TANZANIA, UNITED REPUBLIC OF', 'Tanzania, United Republic of', 'TZA', 834, 255),
+('TH', 'THAILAND', 'Thailand', 'THA', 764, 66),
+('TL', 'TIMOR-LESTE', 'Timor-Leste', NULL, NULL, 670),
+('TG', 'TOGO', 'Togo', 'TGO', 768, 228),
+('TK', 'TOKELAU', 'Tokelau', 'TKL', 772, 690),
+('TO', 'TONGA', 'Tonga', 'TON', 776, 676),
+('TT', 'TRINIDAD AND TOBAGO', 'Trinidad and Tobago', 'TTO', 780, 1868),
+('TN', 'TUNISIA', 'Tunisia', 'TUN', 788, 216),
+('TR', 'TURKEY', 'Turkey', 'TUR', 792, 90),
+('TM', 'TURKMENISTAN', 'Turkmenistan', 'TKM', 795, 7370),
+('TC', 'TURKS AND CAICOS ISLANDS', 'Turks and Caicos Islands', 'TCA', 796, 1649),
+('TV', 'TUVALU', 'Tuvalu', 'TUV', 798, 688),
+('UG', 'UGANDA', 'Uganda', 'UGA', 800, 256),
+('UA', 'UKRAINE', 'Ukraine', 'UKR', 804, 380),
+('AE', 'UNITED ARAB EMIRATES', 'United Arab Emirates', 'ARE', 784, 971),
+('GB', 'UNITED KINGDOM', 'United Kingdom', 'GBR', 826, 44),
+('US', 'UNITED STATES', 'United States', 'USA', 840, 1),
+('UM', 'UNITED STATES MINOR OUTLYING ISLANDS', 'United States Minor Outlying Islands', NULL, NULL, 1),
+('UY', 'URUGUAY', 'Uruguay', 'URY', 858, 598),
+('UZ', 'UZBEKISTAN', 'Uzbekistan', 'UZB', 860, 998),
+('VU', 'VANUATU', 'Vanuatu', 'VUT', 548, 678),
+('VE', 'VENEZUELA', 'Venezuela', 'VEN', 862, 58),
+('VN', 'VIET NAM', 'Viet Nam', 'VNM', 704, 84),
+('VG', 'VIRGIN ISLANDS, BRITISH', 'Virgin Islands, British', 'VGB', 92, 1284),
+('VI', 'VIRGIN ISLANDS, U.S.', 'Virgin Islands, U.s.', 'VIR', 850, 1340),
+('WF', 'WALLIS AND FUTUNA', 'Wallis and Futuna', 'WLF', 876, 681),
+('EH', 'WESTERN SAHARA', 'Western Sahara', 'ESH', 732, 212),
+('YE', 'YEMEN', 'Yemen', 'YEM', 887, 967),
+('ZM', 'ZAMBIA', 'Zambia', 'ZMB', 894, 260),
+('ZW', 'ZIMBABWE', 'Zimbabwe', 'ZWE', 716, 263);
+DML;
+   
+   db_query($sql);
+   
+   return $ret;
+}
+
+/**
+ * Update #17 posted 2013-07-13.
+ * Add new table 'zen_vupoint_us_states' in database
+ */
+function webform_ext_update_7117()
+{
+   $ret = t('New table \'zen_vupoint_us_states\' added to database.');
+
+   $schema = array(
+     'description' => 'List of US States names and abbreviations',
+	 'fields' => array(
+	    'sid' => array(
+		   'description' => 'The primary identifier for records in this table', 
+           'type' => 'serial', 
+           'unsigned' => TRUE, 
+           'not null' => TRUE,
+		),	   
+		'abbreviation' => array(
+		   'description' => '2 character abbreivation', 
+           'type' => 'varchar',  
+           'length' => 3,
+		   'not null' => TRUE, 
+		), 			
+		'state' => array(
+		   'description' => 'Name of state', 
+           'type' => 'varchar',  
+           'length' => 100,
+		   'not null' => TRUE, 
+		),		
+	 ),	
+	 'primary key' => array('sid'),
+	 'indexes' => array(		
+		'zen_vupoint_us_states_abbrev' => array('abbreviation'),
+		'zen_vupoint_us_state_name' => array('state'),
+     ), 
+   );
+   
+   db_create_table('zen_vupoint_us_states', $schema);
+   
+   return $ret;
+} 
+  
+/**
+ * Update #18 posted 2013-07-13.
+ *Add new table 'zen_vupoint_canadian_provs' in database
+ */
+function webform_ext_update_7118()
+{
+   $ret = t('New table \'zen_vupoint_canadian_provs\' added to database.');
+   
+   $schema = array(
+     'description' => 'List of Canadian Provinces names and abbreviations',
+	 'fields' => array(
+	    'cid' => array(
+		   'description' => 'The primary identifier for records in this table', 
+           'type' => 'serial', 
+           'unsigned' => TRUE, 
+           'not null' => TRUE,
+		),	   
+		'abbreviation' => array(
+		   'description' => '2 character abbreivation', 
+           'type' => 'varchar',  
+           'length' => 3,
+		   'not null' => TRUE, 
+		), 			
+		'province' => array(
+		   'description' => 'Name of province', 
+           'type' => 'varchar',  
+           'length' => 100,
+		   'not null' => TRUE, 
+		),		
+	 ),	
+	 'primary key' => array('cid'),
+	 'indexes' => array(		
+		'zen_vupoint_canadian_prov_abbrev' => array('abbreviation'),
+		'zen_vupoint_canadian_prov_name' => array('province'),
+     ), 
+   );
+   
+   db_create_table('zen_vupoint_canadian_provs', $schema);
+   
+   return $ret;
+}
+
+/**
+ * Update #19 posted 2013-07-13.
+ * Insert data into table 'zen_vupoint_us_states'
+ */
+function webform_ext_update_7119()
+{
+   $ret = t('Records added to \'zen_vupoint_us_states\' table.');
+   
+$sql = <<<'DML'
+INSERT INTO `zen_vupoint_us_states` (`abbreviation`, `state`) VALUES 
+('AL', 'Alabama'),
+('AK', 'Alaska'),
+('AZ', 'Arizona'),
+('AR', 'Arkansas'),
+('CA', 'California'),
+('CO', 'Colorado'),
+('CT', 'Connecticut'),
+('DE', 'Delaware'),
+('FL', 'Florida'),
+('GA', 'Georgia'),
+('HI', 'Hawaii'),
+('ID', 'Idaho'),
+('IL', 'Illinois'),
+('IN', 'Indiana'),
+('IA', 'Iowa'),
+('KS', 'Kansas'),
+('KY', 'Kentucky'),
+('LA', 'Louisiana'),
+('ME', 'Maine'),
+('MD', 'Maryland'),
+('MA', 'Massachusetts'),
+('MI', 'Michigan'),
+('MN', 'Minnesota'),
+('MS', 'Mississippi'),
+('MO', 'Missouri'),
+('MT', 'Montana'),
+('NE', 'Nebraska'),
+('NV', 'Nevada'),
+('NH', 'New Hampshire'),
+('NJ', 'New Jersey'),
+('NM', 'New Mexico'),
+('NY', 'New York'),
+('NC', 'North Carolina'),
+('ND', 'North Dakota'),
+('OH', 'Ohio'),
+('OK', 'Oklahoma'),
+('OR', 'Oregon'),
+('PA', 'Pennsylvania'),
+('RI', 'Rhode Island'),
+('SC', 'South Carolina'),
+('SD', 'South Dakota'),
+('TN', 'Tennessee'),
+('TX', 'Texas'),
+('UT', 'Utah'),
+('VT', 'Vermont'),
+('VA', 'Virginia'),
+('WA', 'Washington'),
+('WV', 'West Virginia'),
+('WI', 'Wisconsin'),
+('WY', 'Wyoming'),
+('DC', 'District of Columbia');
+DML;
+   
+   db_query($sql);
+   
+   return $ret;
+}
+
+/**
+ * Update #20 posted 2013-07-13.
+ * Insert data into table 'zen_vupoint_canadian_provs'
+ */
+function webform_ext_update_7120()
+{
+   $ret = t('Records added to \'zen_vupoint_canadian_provs\' table.');
+   
+$sql = <<<'DML'
+INSERT INTO zen_vupoint_canadian_provs(`province`, `abbreviation`) 
+VALUES('Alberta', 'AB'),
+('British Columbia', 'BC'),
+('Manitoba', 'MB'),
+('New Brunswick', 'NB'),
+('Newfoundland and Labrador', 'NL'),
+('Northwest Territories', 'NT'),
+('Nova Scotia', 'NS'),
+('Nunavut', 'NU'),
+('Ontario', 'ON'),
+('Prince Edward Island', 'PE'),
+('Quebec', 'QC'),
+('Saskatchewan', 'SK'),
+('Yukon', 'YT');
+DML;
+   
+   db_query($sql);
+   
+   return $ret;
+}
+
+/**
+ * Update #21 posted 2013-07-15.
+ * Add columns to table 'zen_vupoint_room_bookings'
+ */
+function webform_ext_update_7121()
+{
+   $ret = t('Column(s) added to \'zen_vupoint_room_bookings\' table.');
+   
+   $table = 'zen_vupoint_room_bookings';
+   $schema =  array(
+      'type' => 'numeric', 
+	  'size' => 'normal', 
+	  'description' => 'Amount charged for room stay', 
+	  'not null' => TRUE, 
+	  'default' => 0, 
+	  'precision' => 11, 
+	  'scale' => 3,
+    );
+
+   db_add_field($table, 'line_total', $schema); 
+   
+   $schema = array(
+	   'description' => 'Number of guests booked for duration of stay', 
+       'type' => 'int', 
+       'unsigned' => TRUE, 
+       'not null' => FALSE,
+	   'default' => 0,
+   );
+   
+   db_add_field($table, 'num_guests', $schema); 
+  
+
+   $schema = array(
+	   'description' => 'Date of guests\' arrival',          
+       'type' => 'datetime',
+       'mysql_type' => 'DATETIME',
+       'pgsql_type' => 'timestamp without time zone', 
+       'sqlite_type' => 'VARCHAR', 
+       'sqlsrv_type' => 'smalldatetime',		   
+       'not null' => TRUE,
+	   'initial' => date('Y-m-d'),
+	);
+	
+    db_add_field($table, 'date_of_arrival', $schema); 
+	
+	$schema = array(
+	    'description' => 'Date of guests\' departure',          
+        'type' => 'datetime',
+        'mysql_type' => 'DATETIME',
+        'pgsql_type' => 'timestamp without time zone', 
+        'sqlite_type' => 'VARCHAR', 
+        'sqlsrv_type' => 'smalldatetime',		   
+        'not null' => TRUE,
+		'initial' => date('Y-m-d', strtotime('+3 days')),
+	);
+	
+	db_add_field($table, 'date_of_departure', $schema); 
+
+    return  $ret;	
+}
+
+/**
+ * Update #22 posted 2013-07-15.
+ * Add columns to table 'zen_vupoint_room_bookings'
+ */
+function webform_ext_update_7122()
+{
+   $ret = t('Column(s) added to \'zen_vupoint_room_bookings\' table.');
+   
+   $table = 'zen_vupoint_room_bookings';
+   $field = 'reservation_uid';
+   $init_val = strtoupper(uniqid('VPGH', FALSE));
+   $schema =  array(
+	   'description' => 'Reservation node unique identifier', 
+       'type' => 'varchar',  
+       'length' => 30,        
+       'not null' => TRUE,
+	   'initial' => $init_val,
+   );
+   
+   $keys_new = array(
+      'indexes' => array(
+	     'zen_vupoint_room_bookings_uid' => array($field),
+      ),
+    );
+
+   db_add_field($table, $field, $schema, $keys_new); 
+   
+   return $ret;
+}
+
+/**
+ * Update #23 posted 2013-07-21.
+ * Add columns to table 'zen_vupoint_reservations'
+ */
+function webform_ext_update_7123()
+{
+   $ret = t('Column(s) added to \'zen_vupoint_reservations\' table.');
+   
+   $table = 'zen_vupoint_reservations';
+   $field = 'ipn_track_id';
+   $init_val = 'sample_2d50143422d7b';
+   $index = 'vupoint_reservations_ipn_track_id';
+   
+   $schema =  array(
+	   'description' => 'Instant Payment Notification (IPN) tracking identifier', 
+       'type' => 'varchar',  
+       'length' => 30,        
+       'not null' => FALSE,
+	   'initial' => $init_val,
+   );
+   
+   $keys_new = array(
+      'indexes' => array(
+	     $index => array($field),
+      ),
+    );
+
+   db_add_field($table, $field, $schema, $keys_new); 
+   
+   return $ret;	
+}
+
+/**
+ * Update #24 posted 2013-07-21.
+ * Add columns to table 'zen_vupoint_cc_transaction'
+ */
+function webform_ext_update_7124()
+{
+   $ret = t('Column(s) added to \'zen_vupoint_cc_transaction\' table.');
+   
+   $table = 'zen_vupoint_cc_transaction';
+   $field = 'reservation_uid';
+   $init_val = strtoupper(uniqid('VPGH', FALSE));
+   $index = 'zen_vupoint_cc_transaction_uid';
+   
+   $schema =  array(
+	   'description' => 'Reservation node unique identifier', 
+       'type' => 'varchar',  
+       'length' => 30,        
+       'not null' => TRUE,
+	   'initial' => $init_val,
+   );
+   
+   $keys_new = array(
+      'indexes' => array(
+	     $index => array($field),
+      ),
+    );
+
+   db_add_field($table, $field, $schema, $keys_new); 
+   
+   return $ret;	
+}
+		
+
+
+/**
+ * Update #25 posted 2013-07-23.
+ * Add columns to table 'zen_vupoint_booked_dates'
+ */
+function webform_ext_update_7125()
+{
+   $ret = t('Column(s) added to \'zen_vupoint_booked_dates\' table.');
+   
+   $table = 'zen_vupoint_booked_dates';
+   $field = 'confirmed';
+   $init_val = 1;
+   //$index = 'zen_vupoint_cc_transaction_uid';
+   
+   $schema =  array(
+	   'description' => 'Reason code when room is not available for selection', 
+       'type' => 'varchar',
+	   'length' => 3,        
+       'not null' => FALSE,         
+	);
+   
+  /*  $keys_new = array(
+      'indexes' => array(
+	     $index => array($field),
+      ),
+    ); */
+
+   db_add_field($table, $field, $schema /* , $keys_new */); 
+   
+   return $ret;	
+}
+
+
+/**
+ * Update #26 posted 2013-08-23.
+ * Add columns to table 'zen_vupoint_rooms'
+ */
+function webform_ext_update_7126()
+{
+   $ret = t('Column(s) added to \'zen_vupoint_rooms\' table.');
+   
+   $table = 'zen_vupoint_rooms';
+   
+    /* $init_val = 1; */  
+	$field = 'available_negation_code';
+    $schema =  array(
+	    'description' => 'Reason code indicating room is not available for selection', 
+        'type' => 'varchar',
+		'length' => 3,        
+        'not null' => FALSE,  
+    );
+   
+    $index = 'vupoint_reservations_avail_neg_code';
+    $keys_new = array(
+      'indexes' => array(
+	     $index => array($field),
+      ),
+    );
+
+    db_add_field($table, $field, $schema, $keys_new); 
+   
+    $field = 'available_negation_date';
+    $schema = array(
+		'description' => 'Date and time room was made unavailable',          
+        'type' => 'datetime',
+        'mysql_type' => 'DATETIME',
+        'pgsql_type' => 'timestamp without time zone', 
+        'sqlite_type' => 'VARCHAR', 
+        'sqlsrv_type' => 'smalldatetime',		   
+        'not null' => FALSE,         
+	);
+	
+	$index = 'vupoint_reservations_avail_neg_date';
+    $keys_new = array(
+      'indexes' => array(
+	     $index => array($field),
+      ),
+    );
+	
+	db_add_field($table, $field, $schema, $keys_new);
+   
+    return $ret;	
+}
+
+
+
+function webform_ext_uninstall()
+{
+    
+	db_drop_table('zen_vupoint_reservations');
+	db_drop_table('zen_vupoint_rooms');
+	db_drop_table('zen_vupoint_room_bookings');
+	db_drop_table('zen_vupoint_booked_dates');
+	db_drop_table('zen_vupoint_cc_transaction');
+	db_drop_table('zen_vupoint_cc_transaction_errors');
+	db_drop_table('zen_vupoint_blocked_dates');
+	db_drop_table('zen_vupoint_country_list');
+}
+ 
+ /* function webform_ext_update_1(&$sandbox){
+
+} */

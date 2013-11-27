@@ -1,0 +1,395 @@
+<?php
+ /**
+ * Unit and Functional testing for Eventbrite SBOC module
+ */
+ class WebformExtWebTestCase extends DrupalWebTestCase 
+ {
+ 
+    protected $privileged_user;
+	protected $data;
+    const DAY_IN_SECS = 86400;
+	
+    public static function getInfo() 
+    {
+  	return array(
+  		'name' => 'Webform Extension Module Unit/Functional Tests',
+  		'description' => 'Functional and Unit testing for webform_ext module',
+  		'group' => 'Webform Ext',
+         );
+    }
+   
+    public function setUp() 
+    {     
+       parent::setUp(array('webform', 'webform_ext',));
+	   $this->profile = 'testing';
+       $this->privileged_user = $this->drupalCreateUser(array('administer webform_ext'));
+       $this->drupalLogin($this->privileged_user);
+    }  
+	
+	private function setupTestDataForBookings()
+	{
+		try{
+		  // insert room data
+		  $q = db_insert('zen_vupoint_rooms')
+		  ->fields(array('nid', 'code', 'name',));
+		  $q->values(array('nid' => 70, 'code' => '003', 'name' => 'Room E',));
+		  $q->values(array('nid' => 71, 'code' => '004', 'name' => 'Room F1',));
+          $q->execute();
+		  // insert booking data
+		  $q = db_insert('zen_vupoint_room_bookings')
+		  ->fields(array('rid', 'available_date', 'blocked_days',));
+		  $q->values(array('rid' => 1, 'available_date' => '2013-06-01', 'blocked_days' => 5,));
+		  $q->values(array('rid' => 1, 'available_date' => '2013-05-27', 'blocked_days' => 3,));
+		  $q->execute();		  
+		}catch(Exception $e){
+          throw $e;
+       }
+	}   
+       
+	public function testSelectRoomsQuery()
+    {      
+	   $offset_date = '2013-06-10';
+	   $this->data = array();
+       try{ 
+	      $this->setupTestDataForBookings();
+          $rb = db_select('zen_vupoint_rooms', 'r')
+  	      ->fields('r');
+		  $rb->leftJoin('zen_vupoint_room_bookings', 'rb', 'r.rid = rb.rid');
+  	      $rb->fields('rb', array('available_date', 'blocked_days', ));  	      
+		  $exp = $rb->addExpression("COALESCE(rb.available_date, '$offset_date')", 'next_available_date');
+		  $rb->addExpression('COALESCE(rb.blocked_days, 0)', 'num_blocked_days');
+		  $rb->where("COALESCE(rb.available_date, '$offset_date') >= ". date("'Y-m-d'",strtotime('-60 days', strtotime($offset_date))));		  
+		  $rb->orderBy('rb.blocked_days');
+		  $rb->orderBy('rb.available_date');
+		  $rb->orderBy('r.rid');
+  	      $rb->range(0, 100);
+  	      $this->verbose((string)$rb);
+  	      $result = $rb->execute();		  
+          while($row = $result->fetchAssoc()){
+            $this->data[] = $row; 
+          } 		  
+		  debug($this->data);
+       }catch(Exception $e){
+          watchdog(WEBFORM_EXT_MODULE_NAME,  t($e->getMessage()), array(), WATCHDOG_ERROR);
+		  $this->verbose(t($e->getMessage()));
+       }	
+       $this->assertTrue(count($this->data) == 3, 'Result set has 3 records.');	   
+    }      
+	   
+    public function testGetAvailableRooms()
+    {      
+	   $offset_date = '2013-06-10';
+       try{ 
+	      $this->setupTestDataForBookings();
+          $result = _get_available_booking($offset_date); 
+  	      //$this->verbose((string)$result); 
+		  $this->data = array();
+          while ($row = $result->fetchAssoc()){
+		     $this->data[] = $row;
+	      } 		  
+		  debug($this->data);
+       }catch(Exception $e){
+          watchdog(WEBFORM_EXT_MODULE_NAME,  t($e->getMessage()), array(), WATCHDOG_ERROR);
+		  $this->verbose(t($e->getMessage()));
+       }	
+       $this->assertTrue(count($this->data) == 3, 'Result set has 3 records.');	   
+    }   
+	
+	public function testCheckRoomAvailabilityNoBlocks()
+	{
+	   $this->assertTrue(count($this->data) == 3, 'Result set has 3 records.');	 	  
+	   $arrival_date = '2013-06-15';
+	   $departure_date = '2013-06-20';
+	   $local_data = $this->data;
+	    // get the first 2 items	  
+	   $rows[] = array_shift($local_data);
+	   if (count($local_data) > 0){
+		  $rows[] = array_shift($local_data);
+	   }
+	   $this->assertTrue((int)$rows[0]['rid'] != (int)$rows[1]['rid'], 'Room has 0 existing blocked dates and is available for any future date.');	
+	   $this->assertTrue(strtotime($arrival_date) >= strtotime($rows[1]['next_available_date']), 'Arrival date is on or after availability date.');		   
+	}
+	
+	public function testCheckRoomAvailabilityMulitpleBlocks()
+	{
+	   $this->assertTrue(count($this->data) == 3, 'Result set has 3 records.');	 
+	   $arrival_date = '2013-05-27';
+	   $departure_date = '2013-05-31';
+	   $local_data = $this->data;
+	   array_shift($local_data); // we do not need the first record	   
+	   $rows[] = array_shift($local_data);
+	   if (count($local_data) > 0){
+		  $rows[] = array_shift($local_data);
+	   }
+	   $this->assertTrue((int)$rows[0]['rid'] == (int)$rows[1]['rid'], 'Room has existing blocked dates and has to be checked for availability.');	 	
+	}
+	
+	public function testConfirmRoomMulitpleBlocks_1()
+	{
+	   $this->assertTrue(count($this->data) == 3, 'Result set has 3 records.');	 
+	   $arrival_date = '2013-05-27';
+	   $departure_date = '2013-05-31';
+	   $local_data = $this->data;
+	   array_shift($local_data); // we do not need the first record	   
+	   $rows[] = array_shift($local_data);
+	   if (count($local_data) > 0){
+		  $rows[] = array_shift($local_data);
+	   }
+	   $requested_days = strtotime($departure_date) - strtotime($arrival_date);
+	   $requested_days /= self::DAY_IN_SECS;
+	   $free_days = strtotime($rows[1]['next_available_date']) - strtotime($rows[0]['next_available_date']);
+	   $free_days /= self::DAY_IN_SECS;
+	   $free_days -= (int)$rows[1]['num_blocked_days'];
+	   $this->assertFalse($requested_days <= $free_days, 'Requested days <= available days.');
+	}
+	
+	public function testConfirmRoomMulitpleBlocks_2()
+	{
+	   $this->assertTrue(count($this->data) == 3, 'Result set has 3 records.');	 
+	   $arrival_date = '2013-05-26';
+	   $departure_date = '2013-06-02';
+	   $local_data = $this->data;
+	   array_shift($local_data); // we do not need the first record	   
+	   $rows[] = array_shift($local_data);
+	   if (count($local_data) > 0){
+		  $rows[] = array_shift($local_data);
+	   }
+	   $this->assertFalse(strtotime($arrival_date) >= strtotime($rows[0]['next_available_date']), 'Arrival date is earlier than first available date.');
+	}
+	
+	public function testReturnIdofAvailableRoom_1()
+	{
+	   $arrival_date = strtotime('2013-05-27');
+	   $departure_date = strtotime('2013-05-31');
+	   $this->setupTestDataForBookings();
+	   $rid = _confirm_availability_dates($arrival_date, $departure_date);
+	   $this->verbose("Room Id: $rid"); 
+	   $this->assertTrue($rid == 2, 'Room id (rid) = 2');	   
+	}
+	
+	public function testReturnIdofAvailableRoom_2()
+	{
+	   $arrival_date = strtotime('2013-06-10');
+	   $departure_date = strtotime('2013-06-13');
+	   $this->setupTestDataForBookings();
+	   $rid = _confirm_availability_dates($arrival_date, $departure_date);
+	   $this->verbose("Room Id: $rid"); 
+	   // debug($rid);
+	   $this->assertTrue($rid == 2, 'Room id (rid) == 2.');	   
+	}
+	
+	private function setupTestDataForBookings_1()
+	{
+		try{
+		  // insert room data
+		  $q = db_insert('zen_vupoint_rooms')
+		  ->fields(array('nid', 'code', 'name',));
+		  $q->values(array('nid' => 70, 'code' => '003', 'name' => 'Room E',));
+		  $q->values(array('nid' => 71, 'code' => '004', 'name' => 'Room F1',));
+          $q->execute();
+		  // insert booking data
+		  $q = db_insert('zen_vupoint_room_bookings')
+		  ->fields(array('rid', 'available_date', 'blocked_days',));
+		  $q->values(array('rid' => 1, 'available_date' => '2013-06-01', 'blocked_days' => 5,));
+		  $q->values(array('rid' => 1, 'available_date' => '2013-05-27', 'blocked_days' => 3,));
+		  $q->values(array('rid' => 2, 'available_date' => '2013-06-10', 'blocked_days' => 3,));
+		  $q->execute();
+		  // insert reservation data
+		  $q = db_insert('zen_vupoint_reservations')
+		    ->fields(array(
+		       'nid' => 70, 
+		       'sid' => 1, 
+		       'create_date' => date("Y-m-d H:i:s"),
+		       'number_of_guests' => 2,
+		       'date_of_arrival' => '2013-06-01',
+		       'date_of_departure' => '2013-06-04',
+		       'salutation' => $this->randomName(2),
+		       'first_name' => $this->randomName(10),
+		       'last_name' => $this->randomName(15),
+		       'email' => $this->randomName(20),
+		       'contact_number_1' => $this->randomString(10),
+		       'street_address_1' => $this->randomString(30),
+		       'street_address_2' => $this->randomString(30),
+		       'city' => drupal_strtoupper($this->randomString(20)),
+		       'countries' => drupal_strtoupper($this->randomString(2)),
+		       'prov_state_terr_f' => drupal_strtoupper($this->randomString(2)),
+		       'postal_zip_code' => drupal_strtoupper($this->randomString(6)),
+		       /* 'sub_total' => $submission->data[19][0], */
+		       'sub_total' => 100,
+		       'daily_rate' => 10,
+		       'daily_rate_add' => 15,
+		       'note' => $this->randomString(200),
+	        ))->execute();
+		}catch(Exception $e){
+          throw $e;
+       }
+	}   
+	
+	public function testReturnIdofAvailableRoom_3()
+	{
+	   $arrival_date = strtotime('2013-05-10');
+	   $departure_date = strtotime('2013-05-13');
+	   $this->setupTestDataForBookings_1();
+	   $rid = _confirm_availability_dates($arrival_date, $departure_date);
+	   $this->verbose("Room Id: $rid"); 
+	   $this->assertFalse($rid, 'Room id (rid) == 0.');	   
+	}
+	
+	public function testReturnIdofAvailableRoom_4()
+	{
+	   $arrival_date = strtotime('2013-05-28');
+	   $departure_date = strtotime('2013-05-31');
+	   $this->setupTestDataForBookings_1();
+	   $rid = _confirm_availability_dates($arrival_date, $departure_date);
+	   $this->verbose("Room Id: $rid"); 
+	   $this->assertTrue($rid == 0, 'Room id (rid) == 0.');	   
+	}
+	
+	private function setupTestDataForBookings_2()
+	{
+		try{
+		  // insert room data
+		  $q = db_insert('zen_vupoint_rooms')
+		  ->fields(array('nid', 'code', 'name',));
+		  $q->values(array('nid' => 70, 'code' => '003', 'name' => 'Room E',));
+		  $q->values(array('nid' => 71, 'code' => '004', 'name' => 'Room F1',));
+          $q->execute();
+		  // insert booking data
+		  $q = db_insert('zen_vupoint_room_bookings')
+		  ->fields(array('rid', 'available_date', 'blocked_days',));
+		  $q->values(array('rid' => 1, 'available_date' => '2013-06-01', 'blocked_days' => 2,));
+		  $q->values(array('rid' => 1, 'available_date' => '2013-05-23', 'blocked_days' => 3,));
+		  $q->values(array('rid' => 2, 'available_date' => '2013-06-10', 'blocked_days' => 3,));
+		  $q->execute();
+		  // insert reservation data
+		  $q = db_insert('zen_vupoint_reservations')
+		    ->fields(array(
+		       'nid' => 70, 
+		       'sid' => 1, 
+		       'create_date' => date("Y-m-d H:i:s"),
+		       'number_of_guests' => 2,
+		       'date_of_arrival' => '2013-06-01',
+		       'date_of_departure' => '2013-06-04',
+		       'salutation' => $this->randomName(2),
+		       'first_name' => $this->randomName(10),
+		       'last_name' => $this->randomName(15),
+		       'email' => $this->randomName(20),
+		       'contact_number_1' => $this->randomString(10),
+		       'street_address_1' => $this->randomString(30),
+		       'street_address_2' => $this->randomString(30),
+		       'city' => drupal_strtoupper($this->randomString(20)),
+		       'countries' => drupal_strtoupper($this->randomString(2)),
+		       'prov_state_terr_f' => drupal_strtoupper($this->randomString(2)),
+		       'postal_zip_code' => drupal_strtoupper($this->randomString(6)),
+		       /* 'sub_total' => $submission->data[19][0], */
+		       'sub_total' => 150,
+		       'daily_rate' => 10.5,
+		       'daily_rate_add' => 2.4,
+		       'note' => $this->randomString(200),
+	        ))->execute();
+			// insert rooms
+			$q = db_insert('zen_vupoint_rooms')
+		    ->fields(array('nid', 'code', 'name', 'available',));
+		    $q->values(array('nid' => 70, 'code' => 'PB1', 'name' => 'Room w/ Private Bath', 'available' => 0,));
+		    $q->values(array('nid' => 71, 'code' => 'SB1', 'name' => 'Room w/ Shared Bath', 'available' => 1,));	
+			$q->execute();
+		}catch(Exception $e){
+          throw $e;
+       }
+	}   
+	
+	public function testReturnIdofAvailableRoom_5()
+	{
+	   $arrival_date = strtotime('2013-05-25');
+	   $departure_date = strtotime('2013-05-30');
+	   $this->setupTestDataForBookings_2();
+	   $rid = _confirm_availability_dates($arrival_date, $departure_date);
+	   $this->verbose("Room Id: $rid"); 
+	   /* $this->assertTrue($rid == 1, 'Room id (rid) == 1.');	  */  
+	   $this->assertTrue($rid > 0, 'Room id (rid) > 0.');
+	}
+	
+	public function testRoomIsAvailable_1()
+	{
+	   $this->setupTestDataForBookings_2();
+	   /* _toggle_room_availability(1, FALSE); */
+	   _toggle_room_availability_nid(70, FALSE);
+	   $this->verbose(_is_room_available(1));
+	   $this->assertFalse(_is_room_available_nid(70), 'Room id (rid) == 1 is not available.');	   
+	}
+	
+	public function testRoomIsAvailable_2()
+	{
+	   $this->setupTestDataForBookings_2();
+	   /* _toggle_room_availability(1, TRUE); */
+	   _toggle_room_availability_nid(70, TRUE);
+	   $this->assertTrue(_is_room_available(1), 'Room id (rid) == 1 is available.');	   
+	}
+	
+	public function testCreateBookingDetails()
+    {
+	    $this->setupTestDataForBookings_2();
+		$arrival_date = strtotime('2013-05-20');
+	    $departure_date = strtotime('2013-05-23');
+		$rbid = 1;
+		$rid = 1;
+		$nid = 70;
+        $retVal = 0;
+	    try{
+	      $q = db_insert('zen_vupoint_booked_dates')
+	          ->fields(array(
+	        	  'rid',
+	        	  'rbid',
+	        	  'nid',
+	        	  'booked_date', 	
+	        	));
+	    	$curr_date = $arrival_date;
+	    	$values = array();
+	    	while ($curr_date <= $departure_date){		  
+	    	  $row = array('rid' => $rid, 'rbid' => $rbid, 'nid' => $nid, 'booked_date' => date('Y-m-d', $curr_date),);
+	    	  $q->values($row);
+	    	  $curr_date += DAY_IN_SECS;
+	    	}
+	    	//$q->values($values);
+	    	$retVal = $q->execute();
+			$this->verbose("Booking Details = $retVal");
+			
+			$query = db_select('zen_vupoint_booked_dates', 'bd')
+				->fields('bd', array('booked_date'))
+				->condition('bd.booked_date', array(date('Y-m-d', $arrival_date), date('Y-m-d', $departure_date)), 'BETWEEN');				
+		    $retVal = $query->countQuery()->execute()->fetchField();
+			
+	    }catch(Exception $e){
+	       $this->verbose($e->getMessage());
+	    }		
+	    $this->assertTrue($retVal > 1, "Booking Details == $retVal");
+   }
+	
+	public function testCreateBookingDetails_2()
+	{
+	   $this->setupTestDataForBookings_2();
+	   $arrival_date = strtotime('2013-05-20');
+	   $departure_date = strtotime('2013-05-23');
+	   $count = _create_room_booking_dates_detail(1, 70, 1, $arrival_date, $departure_date);
+	   /*  $this->verbose("Number of bookings: $count"); */
+	   $this->assertTrue($count == 1, 'Number of detailed booking records == 4.');
+	   $count = _count_bookings_for_date(strtotime('2013-05-20'));
+	   $this->assertTrue($count == 1, 'Number of bookings for \'2013-05-20\' == 1.');
+	   $count = _count_bookings_for_date(strtotime('2013-05-21'));
+	   $this->assertTrue($count == 1, 'Number of bookings for \'2013-05-21\' == 1.');
+	   $count = _count_bookings_for_date(strtotime('2013-05-22'));
+	   $this->assertTrue($count == 1, 'Number of bookings for \'2013-05-22\' == 1.');
+	   $count = _count_bookings_for_date(strtotime('2013-05-23'));
+	   $this->assertTrue($count == 1, 'Number of bookings for \'2013-05-23\' == 1.'); 
+	} 
+	
+	public function testCountAvailableRooms()
+	{
+	   $this->setupTestDataForBookings_2();
+	   $count = _count_of_available_rooms();
+	   $this->verbose("Number of rooms available: $count");
+	   $this->assertTrue($count == 3, 'Number of available rooms == 1.'); 
+	}
+         
+ }
+   
