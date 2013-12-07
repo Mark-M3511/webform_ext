@@ -1217,7 +1217,7 @@ function _webform_ext_configure_mandrill_merge_vars(&$mandrill_params, $message)
       if (!is_array($value) && !is_object($value)){
          $vars[] = array(
 	       'name' => $name,
-           'content' => $value,
+           'content' => check_plain($value),
 	     );
 	  }
    }
