@@ -961,9 +961,10 @@ function _webform_ext_check_availability_v2($date_start, $date_end, $private_ame
    error_log("_webform_ext_check_availability_v2: \$date_start = {$date_start} | \$date_end = {$date_end}");
    $retVal = NULL;
    try{
-   
-      $subselect_blocked_dates = db_select('zen_vupoint_blocked_dates', 'bd2')
-	  ->fields('bd2', array('blocked_date',));
+      // We use "select 1 as blocked..." to allow us to perform 1 = 1 comparison later on
+      // if even 1 row from the block dates table is returned we return 0 room rows to the caller 
+      $subselect_blocked_dates = db_select('zen_vupoint_blocked_dates', 'bd2');
+	  $subselect_blocked_dates->AddExpression('1', 'blocked');
 	  $subselect_blocked_dates->condition('bd2.blocked_date', array("$date_start", "$date_end"), 'BETWEEN');
 	  $subselect_blocked_dates->orderBy('bd2.blocked_date');
    
@@ -973,7 +974,6 @@ function _webform_ext_check_availability_v2($date_start, $date_end, $private_ame
 	  $subselect_rooms->condition('r2.private_amenities', $private_amenities, 'IN');
 	  $subselect_rooms->condition('r2.available', 1, '=');
 	  $subselect_rooms->condition('bd.booked_date', array("$date_start", "$date_end"), 'BETWEEN');
-	  //$subselect_rooms->condition('bd.booked_date', $subselect_blocked_dates, 'NOT IN');
 	  $subselect_rooms->condition('bd.confirmed', 1, '=');
 	  $subselect_rooms->orderBy('r2.rid');	  
 	  
@@ -982,12 +982,13 @@ function _webform_ext_check_availability_v2($date_start, $date_end, $private_ame
 	  $r->condition('r.private_amenities', $private_amenities, 'IN');
 	  $r->condition('r.available', 1, '=');
 	  $r->condition('r.rid', $subselect_rooms, 'NOT IN');
+	  // Let's make sure that if we have any blocked dates in the range we return 0 rows
+  	  $r->condition(1, $subselect_blocked_dates, 'NOT IN');
 	  $r->orderBy('r.private_amenities', 'DESC');
 	  $r->orderBy('r.rid');
 	  $retVal = $r->execute();
-	 // dpq($r); 
-	 // error_log(dpq($r));
-	 // error_log("Funcs: \$arrival_date = {$arrival_date} | \$departure_date = {$departure_date}");
+	  // $debug_msg = dpq($r);
+ 	  // watchdog(WEBFORM_EXT_MODULE_NAME,  $debug_msg, array(), WATCHDOG_INFO); 
    }catch(Exception $e){
       watchdog(WEBFORM_EXT_MODULE_NAME,  t($e->getMessage()), array(), WATCHDOG_ERROR);
    }
