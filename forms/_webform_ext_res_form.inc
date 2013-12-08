@@ -18,7 +18,11 @@ function _webform_ext_reservation_form_1($form, &$form_state)
    $d->modify(WEBFORM_EXT_MIN_DATE_FOR_RESERVATION_2);
    $departure_date = !empty($form_state['values']['departure_date']) ? $form_state['values']['departure_date'] : $d->format('Y-m-d');
    
-   _query_num_rooms_available($arrival_date, $departure_date);
+   $_SESSION['num_rooms_available_sa'] = 0;
+   $_SESSION['num_rooms_available_pa'] = 0;
+   if ($arrival_date < $departure_date){
+      _query_num_rooms_available($arrival_date, $departure_date);
+   }
    
    $form['fs_availability_info'] = array(
      /* '#title' => t("Length of stay:"), */
@@ -129,23 +133,21 @@ function _webform_ext_reservation_sa_list_section(&$form, $form_state)
 	 '#prefix' => '<div id="rooms-div-sa">',
      '#suffix' => '</div>',     
    ); 
-
+   
    $num_rooms_sa = !empty($form_state['values']['select_num_rooms_sa']) ?
       $form_state['values']['select_num_rooms_sa'] : 0;	 
-       
-   if ($num_rooms_sa > 0 && $_SESSION['num_rooms_available_sa'] == 0){ 	  	  
-	  $num_rooms_sa = 0; 
-   }  
    
-   if ($_SESSION['num_rooms_available_pa'] == 0){
-   	  $num_available = $_SESSION['num_rooms_available_sa'];      
-      if ($num_available == 0){
-         $num_rooms_sa = 0;
-      }else if ($num_available > 0 && $num_rooms_sa == 0){ 	  
- 	     $num_rooms_sa = 1; // auto-select at least 1 room
-      }
+   $num_available = $_SESSION['num_rooms_available_sa'];
+   if ($num_available == 0){
+   	  $num_rooms_sa = 0;    
    }
-
+   // if we have 0 rooms with private bath remianing, check if there are any with shared bath
+   if ($_SESSION['num_rooms_available_pa'] == 0){ 
+      if ($num_available > 0 && $num_rooms_sa == 0){
+         $num_rooms_sa = 1; // auto-select at least 1 room
+      }  
+   }
+   
    $is_checked = 1;
    for ($i = 1; $i <= $num_rooms_sa; $i++) {   
       _webform_ext_reservation_build_room_selector($form, 'sa', $i, $is_checked);
@@ -165,6 +167,7 @@ function _webform_ext_reservation_pa_list_section(&$form, $form_state)
    // Initialize $num_rooms_pa to value stored in respective form_state values element 
    $num_rooms_pa = !empty($form_state['values']['select_num_rooms_pa']) ?
       $form_state['values']['select_num_rooms_pa'] : 0;
+     
       
    // However it is required to reset $num_rooms_pa to 0 or 1 depending on the value stored in $_SESSION['num_rooms_available_pa'] 
    $num_available = $_SESSION['num_rooms_available_pa'];      
@@ -307,8 +310,15 @@ function ajax_rooms_checkboxes_callback_sa($form, $form_state) {
  
 function ajax_load_available_rooms_callback($form, $form_state)
 {
-//    $arrival_date = $form_state['values']['arrival_date'];
-//    $departure_date = $form_state['values']['departure_date'];
+   
+   $arrival_date = $form_state['values']['arrival_date'];
+   $departure_date = $form_state['values']['departure_date'];
+
+   $errors =  array();
+   $good_dates_1 = (strtotime($arrival_date) < strtotime($departure_date));
+   if (!$good_dates_1){
+	  $errors[] = t("Planned 'Arrival Date' must be earlier than 'Departure Date'");
+   }
    
    $commands = array();
      
@@ -336,10 +346,13 @@ function ajax_load_available_rooms_callback($form, $form_state)
    $selector = "#check-blocked-dates";
    $element = $form['fs_availability_info']['check_blocked_dates'];
    $commands[] = ajax_command_replace($selector, render($element));
-   
-   
+
    $form['#type'] = 'ajax';
    $form['#commands'] = $commands;
+   
+   if (count(errors)){
+      drupal_add_js(array('we_errors_list' => array('error_msgs' => $errors)), 'setting');
+   }
    
    return $form;
    
@@ -371,7 +384,7 @@ function _webform_ext_reservation_form_1_validate($form, $form_state) {
 	  
       $good_dates_1 = (strtotime($form_state['values']['arrival_date']) < strtotime($form_state['values']['departure_date']));
       if (!$good_dates_1){
-	     $errors['date_error_1'] = t("Planned 'Arrival Date'  must be earlier than 'Departure Date'");
+	     $errors['date_error_1'] = t("Planned 'Arrival Date' must be earlier than 'Departure Date'");
       }
 	  
 	  $good_dates_2 = (strtotime($form_state['values']['arrival_date']) >= strtotime(WEBFORM_EXT_MIN_DATE_FOR_RESERVATION, $today));
