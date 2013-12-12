@@ -698,9 +698,9 @@ function _webform_ext_queue_send_mail($params)
 
 function _webform_ext_processed_blocked_dates($data)
 {
-   error_log('Inside function: '. __FUNCTION__ );
-   error_log('Start Date: '. $data->starttime );
-   error_log('End Date: '. $data->endtime );
+   // error_log('Inside function: '. __FUNCTION__ );
+//    error_log('Start Date: '. $data->starttime );
+//    error_log('End Date: '. $data->endtime );
    try{
      $blocked_dates = get_dates_to_block($data->starttime, $data->endtime);
      while($rows = $blocked_dates->fetchAssoc()){
