@@ -331,25 +331,17 @@ function ajax_load_available_rooms_callback($form, $form_state)
    $element = $form['fs_availability_info']['check_blocked_dates'];
    $commands[] = ajax_command_replace($selector, render($element));
    
-   // bof: This is a test
-   // $selector = "#edit-arrival-date-container";
-//    $element = $form['fs_availability_info']['arrival_date'];
-//    $commands[] = ajax_command_replace($selector, render($element));
-//    
-//    $selector = "#edit-departure-date-container";
-//    $element = $form['fs_availability_info']['departure_date'];
-//    $commands[] = ajax_command_replace($selector, render($element));
-   
    $errors = array();
    $arrival_date = $form_state['values']['arrival_date'];
    $departure_date = $form_state['values']['departure_date'];
    _webform_ext_check_date_errors($arrival_date, $departure_date, $errors);
    _webform_ext_load_form_errors($errors);	
    $error_msgs = form_get_errors();
+   $err_count = count($error_msgs);
+   error_log(__FUNCTION__ ." says: \$err_count = $err_count");
    drupal_add_js(array('we_errors_list' => array('error_msgs' => $error_msgs)), 'setting');
    drupal_get_messages();
    
-   // eof: This is a test
 
    $form['#type'] = 'ajax';
    $form['#commands'] = $commands;
@@ -373,27 +365,37 @@ function _webform_ext_check_date_errors($arrival_date, $departure_date, &$errors
    $today = mktime(0, 0, 0);
    $d = new DateTime(date('Y-m-d', $today), new DateTimeZone(WEBFORM_EXT_DEFAULT_TIMEZONE));
    $today = strtotime($d->format('Y-m-d')); 	  
-	  
-   $good_dates_1 = (strtotime($arrival_date) < strtotime($departure_date));  
-   if (!$good_dates_1){
-	$errors['date_error_1'] = t("Planned 'Arrival Date' must be earlier than 'Departure Date'");
+	
+   $good_dates_01 = strtotime($arrival_date);
+   if ($good_dates_01 === FALSE){
+      $errors['date_error_01'] = t("'Arrival Date' does not appear to be in the correct format.");
+   }
+   
+   $good_dates_05 = strtotime($departure_date);
+   if ($good_dates_05 === FALSE){
+      $errors['date_error_05'] = t("'Departure Date' does not appear to be in the correct format.");
    }
 	  
-   $good_dates_2 = (strtotime($arrival_date) >= strtotime(WEBFORM_EXT_MIN_DATE_FOR_RESERVATION, $today));
-   if (!$good_dates_2){
-      $errors['date_error_2'] = t("Planned 'Arrival Date' should not be earlier than: ". date('Y-F-d', strtotime(WEBFORM_EXT_MIN_DATE_FOR_RESERVATION)));
+   $good_dates_10 = (strtotime($arrival_date) < strtotime($departure_date));  
+   if (!$good_dates_10){
+	 $errors['date_error_10'] = t("Planned 'Arrival Date' must be earlier than 'Departure Date'");
+   }
+	  
+   $good_dates_15 = (strtotime($arrival_date) >= strtotime(WEBFORM_EXT_MIN_DATE_FOR_RESERVATION, $today));
+   if (!$good_dates_15){
+      $errors['date_error_15'] = t("Planned 'Arrival Date' should not be earlier than: ". date('Y-F-d', strtotime(WEBFORM_EXT_MIN_DATE_FOR_RESERVATION)));
    }
    
    // check for incorrect date format
   	  
-   $good_dates_4 = (strtotime($departure_date) - strtotime($arrival_date) <= 365 * DAY_IN_SECS);
-   if (!$good_dates_4){
-       $errors['date_error_4'] = t("Planned 'Departure Date' should not be more than 1 year from 'Arrival Date'.");
+   $good_dates_20 = (strtotime($departure_date) - strtotime($arrival_date) <= 365 * DAY_IN_SECS);
+   if (!$good_dates_20){
+       $errors['date_error_20'] = t("Planned 'Departure Date' should not be more than 1 year from 'Arrival Date'.");
    }
 	  
-   $good_dates_5 = (strtotime($departure_date) <= strtotime('+1 year', $today) && strtotime($departure_date) <= strtotime('+1 year', $today));	  
-   if (!$good_dates_5){
-      $errors['date_error_5'] = t("Planned 'Arrival' and 'Departure' dates must be within 1 year of today.");
+   $good_dates_25 = (strtotime($departure_date) <= strtotime('+1 year', $today) && strtotime($departure_date) <= strtotime('+1 year', $today));	  
+   if (!$good_dates_25){
+      $errors['date_error_25'] = t("Planned 'Arrival' and 'Departure' dates must be within 1 year of today.");
    }
    
    $retVal = count($errors);
