@@ -5,6 +5,7 @@
 		   if (settings.we_errors_list === undefined) { return; }
 		   var err = settings.we_errors_list.error_msgs;	
 		   var items = [];
+		   if (!err) { return; }
 		   $.each(err, function(idx, value){
 		      if (value.indexOf("***") == -1){
 		   	  	 err[idx] = "*** " + value;

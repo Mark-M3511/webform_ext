@@ -335,14 +335,16 @@ function ajax_load_available_rooms_callback($form, $form_state)
    $arrival_date = $form_state['values']['arrival_date'];
    $departure_date = $form_state['values']['departure_date'];
    _webform_ext_check_date_errors($arrival_date, $departure_date, $errors);
-   _webform_ext_load_form_errors($errors);	
-   $error_msgs = form_get_errors();
-   $err_count = count($error_msgs);
-   error_log(__FUNCTION__ ." says: \$err_count = $err_count");
-   drupal_add_js(array('we_errors_list' => array('error_msgs' => $error_msgs)), 'setting');
-   drupal_get_messages();
+   _webform_ext_load_form_errors($errors);
    
-
+   if (count($errors)){
+   	  $error_msgs = form_get_errors();
+      $err_count = count($error_msgs);
+      error_log(__FUNCTION__ ." says: \$err_count = $err_count");
+      drupal_add_js(array('we_errors_list' => array('error_msgs' => $error_msgs)), 'setting');
+      drupal_get_messages();
+   }   
+   
    $form['#type'] = 'ajax';
    $form['#commands'] = $commands;
    
