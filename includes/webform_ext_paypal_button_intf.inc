@@ -3,6 +3,7 @@
 /* require(drupal_get_path('module', 'webform_ext'). '/vpgh_pp/PPBootStrap.php'); */
 require_once(drupal_get_path('module', 'webform_ext'). '/vpgh_pp2/PPBootStrap.php');
 require_once(drupal_get_path('module', 'webform_ext'). '/includes/webform_ext_consts.inc');
+require_once(drupal_get_path('module', 'webform_ext'). '/includes/webform_ext_funcs.inc');
 
 
 function PaypalWPSButtonCreate()
@@ -34,7 +35,7 @@ function PaypalWPSButtonCreate()
    $buttonVar[] = "country=CA";			
    $buttonVar[] = "state=ON";			
    $buttonVar[] = "zip=L8K7J6";	 */	
-   $buttonCar[] = "email=". variable_get('site_mail', '');    
+   $buttonVar[] = "email=". variable_get('site_mail', '');    
    $buttonVar[] = "address1=222 Anywhere St";   
    $buttonVar[] = "billing_first_name=Mark";				
    $buttonVar[] = "billing_last_name=McFarlane";				
@@ -136,17 +137,14 @@ function PayWithPayPal()
    $buttonVar[] = "currency_code={$billinginfo->CurrencyCode}";
    $buttonVar[] = "billing_first_name={$res->FirstName}";				
    $buttonVar[] = "billing_last_name={$res->LastName}";		
-   $buttonCar[] = "email={$res->Email}";   
+   $buttonVar[] = "email={$res->Email}";   
    $buttonVar[] = "billing_address1={$res->StreetAddress1}";	
    $buttonVar[] = "billing_address2={$res->StreetAddress2}";	
    $buttonVar[] = "billing_city={$res->CityTown}";		
    $buttonVar[] = "billing_state={$res->ProvState}";	
    $buttonVar[] = "billing_country={$res->Country}";	
    $buttonVar[] = "billing_zip={$res->PostalZip}";
-   // send over area code and phone number only
-   //$buttonVar[] = "night_phone_a={$res->ContactNumCountryCode}";
-   $buttonVar[] = "night_phone_b={$res->ContactNumAreaCode}";			
-   $buttonVar[] = "night_phone_c={$res->ContactNumLineNum}";
+   PaypalParseTelNum(&$buttonVar, $res);
    $buttonVar[] = "showBillingAddress=true";
    $buttonVar[] = "showShippingAddress=false";
    $buttonVar[] = "showBillingEmail=true"; 
@@ -193,8 +191,23 @@ function PayWithPayPal()
    return $retVal;
 }
 
+function PaypalParseTelNum(&$buttonVar, $res)
+{
+   if ($res->ContactNumCountryCode == '1'){
+   	  $buttonVar[] = "night_phone_a={$res->ContactNumAreaCode}"; 
+   	  $_3_digit_prefix = drupal_substr($res->ContactNumLineNum, 0, 3);	
+   	  $buttonVar[] = "night_phone_b={$_3_digit_prefix}";
+   	  $_4_digit_line = drupal_substr($res->ContactNumLineNum, -4);
+   	  $buttonVar[] = "night_phone_c={$_4_digit_line}";
+   }else{
+   	  $buttonVar[] = "night_phone_a={$res->ContactNumCountryCode}"; 
+   	  $buttonVar[] = "night_phone_b={$res->ContactNumAreaCode}{$res->ContactNumLineNum}"; 	
+   }
+}
+
 function PaypalPPSIPNCallBackLive()
 {
+   $_SESSION['rates'] = _get_current_rates();
    $ipnMessage = new PPIPNMessage();
    $ipn_raw_data = array(); 
    if ($ipnMessage->validate()) {
@@ -219,8 +232,8 @@ function PaypalPPSIPNCallBackLive()
 	  $res->ArrivalDate = $res->Custom[1];
 	  $res->DepartureDate = $res->Custom[2];
 	  $res->NumNights = round((strtotime($res->DepartureDate) - strtotime($res->ArrivalDate))/DAY_IN_SECS, 0);
-	  $res->DailyRate = VPGH_DAILY_RATE;
-	  $res->DailyRateExtra = VPGH_DAILY_RATE_EXTRA;
+	  $res->DailyRate = $_SESSION['rates']['rate'];
+	  $res->DailyRateExtra = $_SESSION['rates']['rate_extra'];
 	  $res->TransactionAmt = $ipn_raw_data['payment_gross'];
       $res->Note = '';
 	  $res->ContactNumber_1 = '';
@@ -240,6 +253,7 @@ function PaypalPPSIPNCallBackLive()
 		    break; // we only want the first record
 		 }
 	  }
+	  //Room numbers appended to "custom" string e.g. 1|2|3|4
 	  for($ctr = 3; $ctr < count($res->Custom); $ctr++){
 	     $res->Rooms[] = $res->Custom[$ctr];
 		 $res->RoomCount++;

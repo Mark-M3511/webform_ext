@@ -8,6 +8,10 @@ module_load_include('inc', 'webform_ext', 'includes/webform_ext_funcs');
 
 function _webform_ext_payment_form_1($form, &$form_state)
 {   
+
+   global $user;
+   
+   $account = $user;
    $_SESSION['reservation'] = array();
    $res = new_reservation_object_default();
    $_SESSION['reservation'][] = $res;
@@ -190,69 +194,10 @@ function _webform_ext_payment_form_1($form, &$form_state)
       '#maxlength' => 20, 
       '#required' => TRUE,
    );
-   
-   /*
-   $form['fs_credit_card_info'] = array(
-     '#title' => t("Credit Card Information:"),
-     '#prefix' => '<div id="credit-card-info">',
-     '#suffix' => '</div>',
-     '#type' => 'fieldset',
-     '#description' => t('Enter all required information indicated with an [*]'),
-   );
-   
-   $form['fs_credit_card_info']['credit_card'] = array(
-      '#title' => t('Credit Card:'),
-	  '#type' => 'textfield',
-	  '#default_value' => check_plain($res->creditcard[0]->CreditCardNumber), 
-	  '#size' => 25, 
-      '#maxlength' => 20, 
-      '#required' => TRUE,
-   );
-   
-   $form['fs_credit_card_info']['credit_type'] = array(
-      '#title' => t('Credit Card Type:'),
-	  '#type' => 'select',
-	  '#options' => drupal_map_assoc(array('-Select-', 'Visa', 'MasterCard')),
-	  '#default_value' => $res->creditcard[0]->CreditCardType, 
-      '#required' => TRUE,
-   );
-   
-   $exp_year = array();
-   $start_year = date('Y');
-   $end_year = $start_year + 10;
-   for($ctr = $start_year; $ctr <= $end_year; $ctr++){
-      $exp_year[] = $ctr; 
-   }
-   
-   $form['fs_credit_card_info']['cc_exp_year'] = array(
-      '#title' => t('Expiry Year:'),
-	  '#type' => 'select',
-	  '#options' => drupal_map_assoc($exp_year),
-	  '#default_value' => $res->creditcard[0]->ExpYear, 
-      '#required' => TRUE,
-   );
-   
-   $form['fs_credit_card_info']['cc_exp_month'] = array(
-      '#title' => t('Expiry Month:'),
-	  '#type' => 'select',
-	  '#options' => drupal_map_assoc(array('01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12')),
-	  '#default_value' => $res->creditcard[0]->ExpMonth, 
-      '#required' => TRUE,
-   );
-   
-   $form['fs_credit_card_info']['cc_cvv2'] = array(
-      '#title' => t('Verification Number:'),
-	  '#type' => 'textfield',
-	  '#default_value' => check_plain($res->creditcard[0]->CVV2), 
-	  '#size' => 5, 
-      '#maxlength' => 3, 
-      '#required' => TRUE,
-   );
-   */
-   
+         
    $form['fs_notes_info'] = array(
      '#title' => t("Additional information for VPGH:"),
-     '#prefix' => '<div id="credit-card-info">',
+     '#prefix' => '<div id="notes">',
      '#suffix' => '</div>',
      '#type' => 'fieldset',
      '#description' => t('500 characters maximum including spaces'),
@@ -268,6 +213,24 @@ function _webform_ext_payment_form_1($form, &$form_state)
 	  '#wows' => 10,
 	   
    );
+   
+//    $perm = user_role_permissions($account->roles);
+//    dpm($account->roles);
+   $is_registration_admin = in_array(WEBFORM_EXT_ROLE_PRINCIPAL, $account->roles);
+  
+   if (user_access('administer webform_ext') || $is_registration_admin){
+      $form['fs_admin_only'] = array(
+     	'#title' => t("Administrative Use:"),
+     	'#prefix' => '<div id="admin-use">',
+     	'#suffix' => '</div>',
+     	'#type' => 'fieldset',
+   	  ); 
+   	  $form['fs_admin_only']['offline_booking'] = array(
+      	'#title' => t('This is an offline booking'),
+	  	'#type' => 'checkbox',
+	  	'#default_value' => 1, 	   
+      );
+   }
    
    $form['submit'] = array(
      '#type' => 'submit',
@@ -298,7 +261,6 @@ function _webform_ext_payment_form_1_validate($form, &$form_state) {
 }
 
 function _webform_ext_payment_form_1_submit($form, &$form_state) {
-
     _webform_ext_get_reservation_values($form_state, &$_SESSION['reservation'][0]);
 	$res = $_SESSION['reservation'];
 	_webform_ext_save_reservation_to_db($res);
@@ -309,8 +271,13 @@ function _webform_ext_payment_form_1_submit($form, &$form_state) {
 		  _create_room_booking_dates_detail($params, strtotime($res[0]->ArrivalDate), strtotime($res[0]->DepartureDate)); 
 	   }	
 	}
-	//_webform_ext_update_room_booking_dates($res[0]->ReservationUid, TRUE);
-	// _count_bookings_for_date_range($res[0]->ArrivalDate, $res[0]->DepartureDate);
-	// finally send the guest off to pay
-	drupal_goto(WEBFORM_EXT_PP_REVIEW_PAY);
+	
+	//  send the guest off to pay
+	if (user_access('administer webform_ext') && !empty($form_state['values']['offline_booking'])){
+		_webform_ext_admin_transaction($res[0]);
+		drupal_set_message(WEBFORM_EXT_RES_SUCCESS_MSG_3);
+		drupal_goto(WEBFORM_EXT_RESERVATIONS_PATH_ALIAS);	
+	}else{
+	   drupal_goto(WEBFORM_EXT_PP_REVIEW_PAY);	
+	}
 }

@@ -388,60 +388,6 @@ function _search_availaility_blocker_node($booked_dates)
   return $retVal;
 }
 
-/*
-function _insert_pp_response_data_success($nid, $sid, $ddReqDetails, $doDirectPaymentResponse)
-{
-   $retVal = 0;
-   $personName = $ddReqDetails->CreditCard->CardOwner->PayerName->LastName. ', ';
-   $personName .= $ddReqDetails->CreditCard->CardOwner->PayerName->FirstName;
-   try{
-	  $q = db_insert('zen_vupoint_cc_transaction')
-	     ->fields(array(
-	   	  'ack' => $doDirectPaymentResponse->Ack,
-	   	  'transactionid' => $doDirectPaymentResponse->TransactionID,
-	   	  'amount' => $doDirectPaymentResponse->Amount->value,
-	   	  'AVSCode' => $doDirectPaymentResponse->AVSCode, 
-		  'CVV2Code' => $doDirectPaymentResponse->CVV2Code,
-          'creditcardnumber' => substr($ddReqDetails->CreditCard->CreditCardNumber, -4),
-          'creditcardtype' => $ddReqDetails->CreditCard->CreditCardType,
-          'creditcardexpyear' => $ddReqDetails->CreditCard->ExpMonth,
-          'creditcardexpmonth' => $ddReqDetails->CreditCard->ExpYear,
-          'payername' => $personName,  
-          'create_date' => date('Y-m-d H:i:s'),	
-		  'nid' => $nid,
-		  'sid' => $sid,		  
-		  'currencyid' => $doDirectPaymentResponse->Amount->currencyID,
-	   	));	
-	  $retVal = $q->execute();
-   }catch(Exception $e){
-      watchdog(WEBFORM_EXT_MODULE_NAME,  t($e->getMessage()), array(), WATCHDOG_ERROR);
-   }
-   return $retVal;
-}
-*/
-
-/*
-function _insert_pp_response_data_error($nid, $sid, $ddReqDetails, $doDirectPaymentResponse)
-{
-    $retVal = 0;
-    try{
-      if ($doDirectPaymentResponse && $doDirectPaymentResponse->Errors){
-	     $q = db_insert('zen_vupoint_cc_transaction_errors')
-	         ->fields(array('transactionid', 'create_date', 'nid', 'sid', 'error_shortmessage',
-	  	      'error_longmessage', 'error_code', 'error_severitycode',)); 
-	     foreach($doDirectPaymentResponse->Errors as $error){
-	  	    $q->values(array('transactionid' => 'NONE', 'create_date' => date('Y-m-d H:i:s'), 'nid' => $nid, 'sid' => $sid, 'error_shortmessage' => $error->ShortMessage,
-	  	        'error_longmessage' => $error->LongMessage, 'error_code' =>  $error->ErrorCode, 'error_severitycode' => $error->SeverityCode,));
-         }	 
-	     $retVal = $q->execute();	
-      }	 
-   }catch(Exception $e){
-      watchdog(WEBFORM_EXT_MODULE_NAME,  t($e->getMessage()), array(), WATCHDOG_ERROR);
-   }
-   return $retVal;
-}
-*/
-
 function _webform_ext_finalize_booking_process_v2($reservations)
 {
    try{
@@ -547,6 +493,19 @@ function _webform_ext_update_reservation_from_IPN($res)
    }
 }
 
+function _webform_ext_admin_transaction($res)
+{
+	$res->TransactionDate = date('Y-m-d H:i:s',strtotime());
+    $res->TransactionNumber = $res->ReservationUid;
+	$res->IPNTrackingId = $res->ReservationUid;
+	$res->RequestStatus = WEBFORM_EXT_COMPLETED;
+    $res->TransactionAmt = (double)$_SESSION['order_total'];
+    $res->ContactNumber_1 = $res->ContactNumCountryCode; 
+    $res->ContactNumber_1 .= $res->ContactNumAreaCode;
+    $res->ContactNumber_1 .= $res->ContactNumLineNum; 
+	_webform_ext_wrap_up_IPN_interaction($res);
+}
+
 function _webform_ext_wrap_up_IPN_interaction($res)
 {   
    if ($res->RequestStatus == WEBFORM_EXT_COMPLETED){
@@ -560,78 +519,16 @@ function _webform_ext_wrap_up_IPN_interaction($res)
 	     _create_booking_node(0, $res);
 	  }
 	  
-	  // bof: send 2 emails (1) to guest (2) to admin
+	  // bof: send 2 emails > (1) to guest (2) to admin
 	  $admin_email = (WEBFORM_EXT_USE_TEST_EMAIL ? WEBFORM_EXT_TEST_EMAIL : variable_get('site_mail', WEBFORM_EXT_PP_BUSINESS));
 	  $recp = array($res->Email,  $admin_email);
 	  _webform_ext_send_confirmation_mail($res, $recp);
-	  // eof: send 2 emails (1) to guest (2) to admin
+	  // eof: send 2 emails > (1) to guest (2) to admin
 	  _webform_ext_init_blocked_dates_queue();  	  
    }
    _webform_ext_update_reservation_from_IPN($res);   
 }
 
-/*
-function _webform_ext_send_confirmation_mail($res, $to, $notification_type = WEBFORM_EXT_SUCCESS)
-{
-   $node = _retrieve_mail_message(WEBFORM_EXT_EMAIL_TITLE_SUCCESS, $notification_type);
-   if ($node){
-      $lang_field_from_address = field_language('node', $node, 'field_from_address'); 
-	  $lang_body = field_language('node', $node, 'body');
-	  $lang = language_default();
-	  $node_body = $node->body[$lang_body][0]['value'];
-	  $node_body = _webform_ext_mail_message_merge_success($res, $node);
-      $params = array(); // create parameters array to hold various values for hook_mail function
-      $params['from'] = $node->field_from_address[$lang_field_from_address][0]['value'];
-	  $params['to'] = $to;
-      $params['subject'] = $node->title;
-      $params['message_body'] = $node_body;
-	  $params['message_body'] = '';
-	  $params['body_language'] = $lang;
-	  $params['invoice_data'] = $res;
-      $mail_result = _webform_ext_send_mail($params);
-	  if (!$mail_result['result']){
-	     //watchdog(WEBFORM_EXT_MODULE_NAME,  t($e->getMessage()), array(), WATCHDOG_ERROR);
-	  }
-	  //dpm($params);
-   }else{
-      watchdog(WEBFORM_EXT_MODULE_NAME,  'Email message not found!', array(), WATCHDOG_ERROR);
-   } 
-}
-
-function _webform_ext_mail_message_merge_success($res, $node)
-{   
-   $num_nights = (strtotime($res->DepartureDate) - strtotime($res->ArrivalDate))/DAY_IN_SECS; 
-   
-   $replacements = array(
-       '!customer_name' => drupal_strtoupper(check_plain($res->FirstName).' '. check_plain($res->LastName)),
-       '!customer_street_address' => drupal_strtoupper(check_plain($res->StreetAddress1)),
-	   '!customer_city_town' => drupal_strtoupper(check_plain($res->CityTown)),
-	   '!customer_prov_state' => drupal_strtoupper(check_plain($res->ProvState)),
-	   '!customer_postal' => drupal_strtoupper(check_plain($res->PostalZip)),
-	   '!customer_country' => drupal_strtoupper($res->Country),
-	   '!customer_email' => $res->Email,
-	   '!customer_contact_num' => check_plain($res->ContactNumber_1),
-	   '!transaction_date' => $res->TransactionDate,
-	   '!transaction_number' => $res->TransactionNumber,
-	   '!num_guests' => $res->NumGuests,
-	   '!daily_rate' => $res->DailyRate,
-	   '!daily_rate_extra' => $res->DailyRateExtra,
-	   '!num_nights' => $num_nights,
-	   '!arrival_date' => $res->ArrivalDate,
-	   '!departure_date' => $res->DepartureDate,
-	   '!total_charge' => $res->TransactionAmt,
-	   '!card_type' => 'N/A',
-	   '!last_4' => 'N/A',
-	   '!room_type' => 'N/A',
-	   '!room_count' => $res->RoomCount,
-	); 
-	
-   $lang_body = field_language('node', $node, 'body');   
-   $retVal = format_string($node->body[$lang_body][0]['value'], $replacements);   
-   return $retVal;
-}
-
-*/
 
 function _webform_ext_init_blocked_dates_queue()
 {
@@ -1173,23 +1070,7 @@ function  _webform_ext_get_reservation_values($form_state, &$res)
 
 function _webform_ext_configure_mandrill_merge_vars(&$mandrill_params, $message)
 {
-   /*  
-   foreach($mandrill_params as $key => $value){
-     error_log("\$mandrill_params = {$key} => {$value}");
-     if (is_array($value)){
-        foreach($value as $key2 => $value2){
-           error_log("\$mandrill_params = {$key2} => {$value2}");
-        }
-     }
-   }
-   
-   $mandrill_params['args']['template_id'] =  WEBFORM_EXT_MANDRILL_TEMPLATE_NAME;
-   $mandrill_params['args']['template_content'] = array(
-      'name' => 'monkeyrewards',
-      'content' => '',
-   );
-   */
- 
+    
    $global_merge_vars = array();
    $res = $message['params']['invoice_data'];
    
@@ -1207,6 +1088,7 @@ function _webform_ext_configure_mandrill_merge_vars(&$mandrill_params, $message)
    );
    
    $mandrill_params['message']['global_merge_vars'] = $global_merge_vars;
+   
    /* an array or arrays of per recipient values */
    $merge_vars = array();
    /* per recipient values */

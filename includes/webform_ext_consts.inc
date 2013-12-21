@@ -74,6 +74,7 @@
  define('WEBFORM_EXT_PP_SUCCESS_GENERIC_MSG_2', 'You should receive an email with your billing details and other instructions for your stay, shortly.');
  define('WEBFORM_EXT_RES_SUCCESS_MSG_1', 'Your reservation has been accepted.');
  define('WEBFORM_EXT_RES_SUCCESS_MSG_2', 'Your order total in U.S. dollars: $');
+ define('WEBFORM_EXT_RES_SUCCESS_MSG_3', 'Reservation information processed successfully.');
  define('WEBFORM_EXT_PP_ITEM_NAME', 'Room Stay: @num_guests guest(s) | @num_rooms room(s) | @from - @to | US $@amount');
  define('WEBFORM_EXT_NOTIFICATION_EMAIL_SUBJECT', 'Vupoint Guest House Reservation & Payment Confirmation');
  define('WEBFORM_EXT_NOTIFICATION_EMAIL_ERROR', 'Unable to send confirmation email.');
@@ -126,4 +127,7 @@
  
  /* Cron API task identifiers */
  define('WEBFORM_EXT_CRONAPI_BLOCKED_DATES', 'cron_queue_blocked_dates');
+ 
+ /* Roles and Permissions */
+ define('WEBFORM_EXT_ROLE_PRINCIPAL', 'principal');
  

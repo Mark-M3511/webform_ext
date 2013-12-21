@@ -251,37 +251,6 @@ function webform_ext_cron_queue_info()
    return $queues;
 }
 
-/**
-* Implementation of hook_menu_link_alter
-*/
-
-/* function webform_ext_menu_link_alter(&$item)
-{ 
-   if (isset($item['title']) && strtolower($item['title']) == WEBFORM_EXT_RESERVATIONS_PATH_ALIAS) {
-      $item['options']['alter'] = TRUE;
-   }
-} */
-
-/**
-* Implementation of hook_menu_translated_link_alter
-*/
-/* function webform_ext_translated_menu_link_alter(&$item){
-   if (isset($item['title']) && strtolower($item['title']) == WEBFORM_EXT_RESERVATIONS_PATH_ALIAS) {     
-	  $protocol = HTTP;	   
-      if (IS_SSL){ 
-	     $protocol = HTTPS;
-		 $item['link_path'] =  $protocol. WEBFORM_EXT_HOST . '/'. WEBFORM_EXT_RESERVATIONS_PATH_ALIAS;
-	  }else{
-	     $item['link_path'] = drupal_get_normal_path(WEBFORM_EXT_RESERVATIONS_PATH_ALIAS);
-	  }
-   }
-} */
-
- 
- /**
- * Implementation of hook_webform_submission_update
- */
-
 function webform_ext_node_insert($node){    
 	switch($node->type)
 	{ 
@@ -338,20 +307,6 @@ function webform_ext_mail($key, &$message, $params)
 	  break;
    }    
 }
-
-/*
-function webform_ext_mail_alter(&$message)
-{
- 	foreach($message as $key => $value){
-       error_log("\$message = {$key} => {$value}");
-       if (is_array($value)){
-          foreach($value as $key2 => $value2){
-             error_log("\$message = {$key2} => {$value2}");
-          }
-       }
-    }
-}
-*/
 
 function webform_ext_mandrill_mail_alter(&$mandrill_params, $message)
 {
