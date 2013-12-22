@@ -40,6 +40,7 @@
  define('WEBFORM_EXT_HOST', $_SERVER['SERVER_NAME']);
  define('WEBFORM_EXT_NOTIFICATION_SUCCESS_PAGE', 'payment-success-notification');
  define('WEBFORM_EXT_NOTIFICATION_FAILURE_PAGE', 'payment-failure-notification');
+ define('WEBFORM_EXT_NOTIFICATION_ADMIN_TXN_NOTIFICATION_PAGE', 'admin-transaction-notification');
  define('WEBFORM_EXT_RESERVATIONS_PATH_ALIAS', 'reservations');
  define('WEBFORM_EXT_PAYMENT_PATH_ALIAS', 'vpgh/payment');
  

@@ -495,11 +495,11 @@ function _webform_ext_update_reservation_from_IPN($res)
 
 function _webform_ext_admin_transaction($res)
 {
-	$res->TransactionDate = date('Y-m-d H:i:s',strtotime());
+	$res->TransactionDate = date('Y-m-d H:i:s',time());
     $res->TransactionNumber = $res->ReservationUid;
 	$res->IPNTrackingId = $res->ReservationUid;
 	$res->RequestStatus = WEBFORM_EXT_COMPLETED;
-    $res->TransactionAmt = (double)$_SESSION['order_total'];
+    $res->TransactionAmt = number_format((double)$_SESSION['order_total'], 2);
     $res->ContactNumber_1 = $res->ContactNumCountryCode; 
     $res->ContactNumber_1 .= $res->ContactNumAreaCode;
     $res->ContactNumber_1 .= $res->ContactNumLineNum; 
@@ -1108,4 +1108,15 @@ function _webform_ext_configure_mandrill_merge_vars(&$mandrill_params, $message)
      'vars' => $vars,
    );  
    $mandrill_params['message']['merge_vars'] = $merge_vars;
+}
+
+function _webform_ext_user_is_content_admin()
+{
+	global $user;
+	
+	$account = $user;
+	$is_registration_admin = in_array(WEBFORM_EXT_ROLE_PRINCIPAL, $account->roles);
+	$is_registration_admin = ($is_registration_admin || user_access('administer webform_ext', $account));
+	
+	return $is_registration_admin;
 }

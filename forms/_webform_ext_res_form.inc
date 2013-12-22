@@ -54,7 +54,7 @@ function _webform_ext_reservation_form_1($form, &$form_state)
    
    $form['fs_availability_info']['check_availability_msg'] = array(
       '#type' => 'markup', 
-	  '#markup' => "<ol><li>Enter 'Arrival' and 'Departure' dates and click <span style=\"font-weight: bold;\">'Check Room Availability'</span>.</li><li>Select rooms with private or shared baths to reserve</li><li>Select up to 4 guests per room.</li><li>Click <span style=\"font-weight: bold;\">'Reserve Now'</span> </li></ol>",      
+	  '#markup' => "<ol><li>Enter 'Arrival' and 'Departure' dates then click <span style=\"font-weight: bold;\">'Check Room Availability'</span>.</li><li>Select rooms with private or shared baths to reserve</li><li>Select up to 4 guests per room.</li><li>Click <span style=\"font-weight: bold;\">'Reserve Now'</span> </li></ol>",      
 // 	  '#prefix' => '<div id="check-availability-msg">',
 	  '#prefix' => '<div class="instructions">',
       '#suffix' => '</div>',
@@ -338,11 +338,14 @@ function ajax_load_available_rooms_callback($form, $form_state)
    _webform_ext_load_form_errors($errors);
    
    if (count($errors)){
-   	  $error_msgs = form_get_errors();
+	  $error_msgs = form_get_errors();
       $err_count = count($error_msgs);
       error_log(__FUNCTION__ ." says: \$err_count = $err_count");
       drupal_add_js(array('we_errors_list' => array('error_msgs' => $error_msgs)), 'setting');
       drupal_get_messages();
+   }else{
+      $error_msgs = array('no_errors' => '');
+//       drupal_add_js(array('we_errors_list' => array('error_msgs' => $error_msgs)), 'setting');
    }   
    
    $form['#type'] = 'ajax';

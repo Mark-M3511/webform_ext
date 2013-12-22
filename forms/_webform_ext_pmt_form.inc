@@ -9,9 +9,6 @@ module_load_include('inc', 'webform_ext', 'includes/webform_ext_funcs');
 function _webform_ext_payment_form_1($form, &$form_state)
 {   
 
-   global $user;
-   
-   $account = $user;
    $_SESSION['reservation'] = array();
    $res = new_reservation_object_default();
    $_SESSION['reservation'][] = $res;
@@ -214,11 +211,9 @@ function _webform_ext_payment_form_1($form, &$form_state)
 	   
    );
    
-//    $perm = user_role_permissions($account->roles);
-//    dpm($account->roles);
-   $is_registration_admin = in_array(WEBFORM_EXT_ROLE_PRINCIPAL, $account->roles);
-  
-   if (user_access('administer webform_ext') || $is_registration_admin){
+   $payment_btn_caption = 'Proceed to Pay';
+   
+   if (_webform_ext_user_is_content_admin()){
       $form['fs_admin_only'] = array(
      	'#title' => t("Administrative Use:"),
      	'#prefix' => '<div id="admin-use">',
@@ -226,15 +221,16 @@ function _webform_ext_payment_form_1($form, &$form_state)
      	'#type' => 'fieldset',
    	  ); 
    	  $form['fs_admin_only']['offline_booking'] = array(
-      	'#title' => t('This is an offline booking'),
+      	'#title' => t('This is an offline booking:'),
 	  	'#type' => 'checkbox',
 	  	'#default_value' => 1, 	   
       );
+      $payment_btn_caption = 'Submit Transaction';
    }
    
    $form['submit'] = array(
      '#type' => 'submit',
-     '#value' => t('Submit Payment'),
+     '#value' => t($payment_btn_caption),
    );
    
    return $form;
@@ -273,11 +269,11 @@ function _webform_ext_payment_form_1_submit($form, &$form_state) {
 	}
 	
 	//  send the guest off to pay
-	if (user_access('administer webform_ext') && !empty($form_state['values']['offline_booking'])){
+	if (_webform_ext_user_is_content_admin() && !empty($form_state['values']['offline_booking'])){
 		_webform_ext_admin_transaction($res[0]);
-		drupal_set_message(WEBFORM_EXT_RES_SUCCESS_MSG_3);
-		drupal_goto(WEBFORM_EXT_RESERVATIONS_PATH_ALIAS);	
+// 		drupal_set_message(WEBFORM_EXT_RES_SUCCESS_MSG_3);
+		drupal_goto(WEBFORM_EXT_NOTIFICATION_ADMIN_TXN_NOTIFICATION_PAGE);	
 	}else{
-	   drupal_goto(WEBFORM_EXT_PP_REVIEW_PAY);	
+	    drupal_goto(WEBFORM_EXT_PP_REVIEW_PAY);	
 	}
 }
