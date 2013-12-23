@@ -532,6 +532,7 @@ function _webform_ext_wrap_up_IPN_interaction($res)
 
 function _webform_ext_init_blocked_dates_queue()
 {
+   $_date = new StdClass();
    $_date->starttime = date('Y-m-d',strtotime("-3 months"));
    $_date->endtime =  date('Y-m-d', strtotime("+1 year"));
    $queue = DrupalQueue::get(WEBFORM_EXT_QUEUE_CREATE_BLOCKING_NODES);
@@ -688,6 +689,7 @@ function _update_room($node)
   } 	
 }
 
+/*
 function _insert_blocked_date($node)
 {    
 	try{
@@ -701,6 +703,43 @@ function _insert_blocked_date($node)
 		'blocked_date' => $node->field_blocked_date[$lang_field_blocked_date][0]['value'],
 		'blocked' => 1,
 	  ))->execute();
+    }catch(Exception $e){
+       watchdog(WEBFORM_EXT_MODULE_NAME,  t($e->getMessage()), array(), WATCHDOG_ERROR);
+    }
+}
+*/
+
+function _insert_blocked_date($node)
+{    
+	try{
+	  node_object_prepare($node); 
+	  $lang_field_blocked_date = field_language('node', $node, 'field_blocked_date'); 
+	  $date_start = $node->field_blocked_date[$lang_field_blocked_date][0]['value'];
+	  $date_end = $node->field_blocked_date[$lang_field_blocked_date][0]['value2'];
+	  $delta = (strtotime($date_end) - strtotime($date_start)) / DAY_IN_SECS;
+	  $delta = (int)$delta;
+	  $rows = array();
+	  for($ctr = 0; $ctr <= $delta; $ctr++){
+	     $rows[] = array(
+			'nid' => $node->nid,
+			'create_date' => date('Y-m-d'),
+			'change_date' => date('Y-m-d H:i:s'),
+			'blocked_date' => date('Y-m-d', strtotime("+{$ctr} day", strtotime($date_start))),
+			'blocked' => 1,
+	     );
+	  }
+	  $query = db_insert('zen_vupoint_blocked_dates')
+	  ->fields(array(
+		'nid',
+		'create_date',
+		'change_date',
+		'blocked_date',
+		'blocked',
+	  ));
+	  foreach($rows as $row){
+	  	 $query->values($row); 
+      }
+	  $query->execute();
     }catch(Exception $e){
        watchdog(WEBFORM_EXT_MODULE_NAME,  t($e->getMessage()), array(), WATCHDOG_ERROR);
     }

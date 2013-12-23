@@ -189,9 +189,7 @@ function webform_ext_menu(){
 
 function webform_ext_init() {
   // We don't want caching for some links in this module
-  //if (drupal_match_path($_GET['q'],'vpgh/*')){ request_path()
   if (drupal_match_path(request_path(),'vpgh/*')){
-     //$GLOBALS['conf']['cache'] = FALSE;
 	 drupal_page_is_cacheable(FALSE);
   }
 }
@@ -272,7 +270,9 @@ function webform_ext_node_update($node) {
    	    _update_room($node); 
    	    break; 
 	  case NODE_TYPE_AVAILABILITY_BLOCKER:
-		_update_blocked_date($node); 
+// 	  Updating records in the zen_vupoint_blocked_dates makes no sense for this node type
+// 	  Deleting then recreating the node is the recommended solution
+// 		_update_blocked_date($node); 
 		break;	
       default:
          break;		
