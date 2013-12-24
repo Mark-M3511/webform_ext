@@ -645,9 +645,10 @@ function webform_ext_schema(){
 	 ),	
 	 'primary key' => array('bdid'),
 	 'indexes' => array(		
-		'vupoint_blocked_dates_blocked_date' => array('blocked_date'),
+// 		'vupoint_blocked_dates_blocked_date' => array('blocked_date'),
 		'vupoint_blocked_dates_nid' => array('nid'),
      ), 
+     'unique keys' => array('blocked_date' => 'blocked_date',),
    );
    
    $schema['zen_vupoint_country_list'] = array(
@@ -2052,6 +2053,26 @@ function webform_ext_update_7126()
     return $ret;	
 }
 
+/**
+ * Update #27 posted 2013-12-23.
+ * Drop non-unique index on blocke_date column
+ * Add unique index on blocke_date column
+ */
+function webform_ext_update_7127()
+{
+   $ret = t('Unique index added to \'zen_vupoint_blocked_dates\' table.');
+  
+   $table = 'zen_vupoint_blocked_dates';
+   $name = 'vupoint_blocked_dates_blocked_date';
+   $fields = array('blocked_date',);  
+   
+   db_drop_index($table, $name);   
+  
+   $name = 'blocked_date'; 
+   db_add_unique_key($table, $name, $fields);   
+    
+   return $ret;	
+}
 
 
 function webform_ext_uninstall()

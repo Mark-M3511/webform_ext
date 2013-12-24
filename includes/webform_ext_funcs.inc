@@ -689,44 +689,50 @@ function _update_room($node)
   } 	
 }
 
-/*
-function _insert_blocked_date($node)
-{    
-	try{
-	  node_object_prepare($node); 
-	  $lang_field_blocked_date = field_language('node', $node, 'field_blocked_date'); 
-	  db_insert('zen_vupoint_blocked_dates')
-	  ->fields(array(
-		'nid' => $node->nid,
-		'create_date' => date('Y-m-d'),
-		'change_date' => date('Y-m-d H:i:s'),
-		'blocked_date' => $node->field_blocked_date[$lang_field_blocked_date][0]['value'],
-		'blocked' => 1,
-	  ))->execute();
-    }catch(Exception $e){
-       watchdog(WEBFORM_EXT_MODULE_NAME,  t($e->getMessage()), array(), WATCHDOG_ERROR);
-    }
+function _get_blocked_date($date_start, $date_end)
+{
+  $retVal = array();
+  try{
+    $bd = db_select('zen_vupoint_blocked_dates', 'bd')
+	 ->fields('bd', array('blocked_date'))
+	 ->condition('bd.blocked_date', array("$date_start", "$date_end"), 'BETWEEN')
+	 ->execute();
+	 while ($row = $bd->fetchAssoc()){
+	    $retVal[] = strtotime($row['blocked_date']);
+	 }
+  }catch(Exception $e){
+     watchdog(WEBFORM_EXT_MODULE_NAME,  t($e->getMessage()), array(), WATCHDOG_ERROR);
+  }
+  return $retVal;
 }
-*/
 
 function _insert_blocked_date($node)
 {    
-	try{
+	try{	  
 	  node_object_prepare($node); 
 	  $lang_field_blocked_date = field_language('node', $node, 'field_blocked_date'); 
-	  $date_start = $node->field_blocked_date[$lang_field_blocked_date][0]['value'];
-	  $date_end = $node->field_blocked_date[$lang_field_blocked_date][0]['value2'];
-	  $delta = (strtotime($date_end) - strtotime($date_start)) / DAY_IN_SECS;
-	  $delta = (int)$delta;
-	  $rows = array();
-	  for($ctr = 0; $ctr <= $delta; $ctr++){
-	     $rows[] = array(
-			'nid' => $node->nid,
-			'create_date' => date('Y-m-d'),
-			'change_date' => date('Y-m-d H:i:s'),
-			'blocked_date' => date('Y-m-d', strtotime("+{$ctr} day", strtotime($date_start))),
-			'blocked' => 1,
-	     );
+	  $str_date_start = $node->field_blocked_date[$lang_field_blocked_date][0]['value'];
+	  $str_date_end = $node->field_blocked_date[$lang_field_blocked_date][0]['value2'];
+	  $date_start = strtotime($str_date_start);
+	  $date_end = strtotime($str_date_end);
+	  $delta = ($date_end - $date_start) / DAY_IN_SECS;
+	  $delta = (int)$delta + 1;
+	  $rows = array();	  
+	  $blocked_dates = _get_blocked_date($str_date_start, $str_date_end);
+	  for($ctr = 0; $ctr < $delta; $ctr++){
+	     $curr_day = strtotime("+{$ctr} day", $date_start);
+		 if (!in_array($curr_day, $blocked_dates)){
+	     	$rows[] = array(
+				'nid' => $node->nid,
+				'create_date' => date('Y-m-d H:i:s'),
+				'change_date' => date('Y-m-d H:i:s'),
+				'blocked_date' => date('Y-m-d', $curr_day),
+				'blocked' => 1,
+	    	 );
+	     }else{
+	        $msg = format_string('!curr_date already in blocked dates table.', array('!curr_date' => date('Y-m-d', $curr_day))); 
+	        watchdog(WEBFORM_EXT_MODULE_NAME, t($msg), array(), WATCHDOG_INFO);
+	     }
 	  }
 	  $query = db_insert('zen_vupoint_blocked_dates')
 	  ->fields(array(
