@@ -730,8 +730,8 @@ function _insert_blocked_date($node)
 				'blocked' => 1,
 	    	 );
 	     }else{
-	        $msg = format_string('!curr_date already in blocked dates table.', array('!curr_date' => date('Y-m-d', $curr_day))); 
-	        watchdog(WEBFORM_EXT_MODULE_NAME, t($msg), array(), WATCHDOG_INFO);
+	        $msg = '!curr_date already in blocked dates table.'; 
+	        watchdog(WEBFORM_EXT_MODULE_NAME, t($msg),  array('!curr_date' => date('Y-m-d', $curr_day)), WATCHDOG_INFO);
 	     }
 	  }
 	  $query = db_insert('zen_vupoint_blocked_dates')
@@ -1040,16 +1040,22 @@ function _webform_ext_load_states_prov_NA()
    $states_prov = array();
    try{      
 	  $r1 = db_select('zen_vupoint_us_states', 'us')
-	  ->fields('us', array('abbreviation', 'state',));
+	  ->fields('us', array('abbreviation',));
+	  $r1->AddExpression('state', 'name');
 	  $r1->AddExpression('1', 'prefix');
+	  
 	  $r2 = db_select('zen_vupoint_canadian_provs', 'ca')
-	  ->fields('ca', array('abbreviation', 'province',));
+	  ->fields('ca', array('abbreviation',));
+	  $r2->AddExpression('province', 'name');
 	  $r2->AddExpression('2', 'prefix');
-	  $r1->union($r2, 'ALL');
-	  $retVal = $r1->execute();
-	 //  dpq($r);
+	  
+	  $combo = db_select($r1->union($r2, 'ALL'));
+      $combo->fields(NULL, array('prefix', 'abbreviation', 'name',)); 
+      $combo->orderBy('name');
+// 	  dpq($combo);  
+	  $retVal = $combo->execute();	 
 	  while ($row = $retVal->fetchAssoc()){	     	     
-		 $states_prov[$row['prefix'].'-'.$row['abbreviation']] = $row['state'];;
+		 $states_prov[$row['prefix'].'-'.$row['abbreviation']] = $row['name'];
 	  }
    }catch(Exception $e){
       watchdog(WEBFORM_EXT_MODULE_NAME,  t($e->getMessage()), array(), WATCHDOG_ERROR);
