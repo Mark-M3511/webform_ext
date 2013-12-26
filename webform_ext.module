@@ -301,10 +301,12 @@ function webform_ext_mail($key, &$message, $params)
    {
       case WEBFORM_EXT_EMAIL_KEY:
 	     $message['subject'] = $params['subject'];		
-		 $message['body'][] = $params['message_body'];
-	  break;
+// 		 $message['body'][] = $params['message_body'];
+		 $message['body'] = $params['message_body'];
+		 $message['attachments'] = $params['attachments'];
+	     break;
 	  default:
-	  break;
+	     break;
    }    
 }
 

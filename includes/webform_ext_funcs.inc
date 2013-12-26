@@ -541,14 +541,19 @@ function _webform_ext_init_blocked_dates_queue()
 
 function _webform_ext_send_confirmation_mail($res, $recp)
 {
+   $public_files = DRUPAL_ROOT . '/'. variable_get('file_public_path', ''). '/';	
    $params = array(); 
    $params['from'] = variable_get('site_mail', WEBFORM_EXT_PP_BUSINESS);
    $params['subject'] = WEBFORM_EXT_NOTIFICATION_EMAIL_SUBJECT;
    $params['body_language'] = language_default();
-   $params['message_body'] = '';
+   $params['message_body'][] = '';
    $params['invoice_data'] = $res;
+   $params['attachments'][] = $public_files. 'this-file-does-not-exist.ext';
+//    $params['attachments'][] = $public_files. 'attractions/800px-Fregata_magnificens1.jpg';
+//    error_log('Path: '. $public_files);
    if (WEBFORM_EXT_QUEUE_MAIL_SEND){
       $queue = DrupalQueue::get(WEBFORM_EXT_QUEUE_CONFIRMATION_EMAILS);
+      $_params = new StdClass();
       $_params->params = $params;
 	  $_params->recp = $recp;
 	  $queue->createItem($_params);
