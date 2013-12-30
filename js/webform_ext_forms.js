@@ -7,7 +7,7 @@
 		   var items = [];
 		   if (!err) { return; }
 		   $.each(err, function(idx, value){
-		      if (value.indexOf("***") == -1){
+		      if (value.indexOf("***") == -1 && value != ""){
 		   	  	 err[idx] = "*** " + value;
 		   	  	 items.push('<li><span style="font-style: italic;">Error Detected: ' + value + '</span></li>');				 
 		   	  }
@@ -22,6 +22,9 @@
 	          ul.remove();
 	       }
 	       
+	       if (window.console && console.log) { console.log(items.length); }
+// 	       if (items.length == 0) { return; }	       
+	       
 	       ul = $('<ul id="errors"></ul>');
 	       $("#block-system-main").prepend(ul);	      
 	       ul.append(items.join(''));
@@ -33,7 +36,7 @@
 // 		   var descDiv = $(".container-inline-date .description", context);
 		   var descDiv = $(".container-inline-date .description");	
 		   if (descDiv !== undefined){
-		      descDiv.text("e.g. YYYY-MM-DD");
+			  descDiv.text("YYYY-MM-DD");
 		   }
 		}
 	}

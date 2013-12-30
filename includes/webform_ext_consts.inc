@@ -82,6 +82,7 @@
  define('WEBFORM_EXT_RESERVATION_ACCEPTED_MSG', 'Your reservation is accepted. Please enter your personal information for payment and confirmation of your stay.');
  define('WEBFORM_EXT_CHECKED_ROOMS_MSG', 'Please Note: Checked rooms will be included in your booking. Uncheck rooms you wish to exclude.');
  define('ERROR_AVAILABILITY', 'Unable to complete reservation. Please check your dates.');
+ define('WEBFORM_EXT_NOTIFICATION_EMAIL_INFO', 'Email successfully sent to \'@email_to\' with subject \'@subject\'');
  
  /* Paypal Flags */
  define('WEBFORM_EXT_PP_TRANSACTION_TYPE', 'Sale');
@@ -103,10 +104,14 @@
  define('WEBFORM_EXT_TEST_PP_SANDBOX_URL', 'https://www.sandbox.paypal.com/cgi-bin/webscr'); 
  define('WEBFORM_EXT_TEST_LIVE_URL', 'https://www.paypal.com/cgi-bin/webscr');
  define('WEBFORM_EXT_PAYMENT_FORM', 'payment-form');
- define('WEBFORM_EXT_EMAIL_KEY', 'booking_notification');
  define('ROOMS_AND_FEATURES', 'rooms_and_features');
  define('CALENDAR_VIEW_NAME', 'booking_calendar');
  define('CALENDAR_VIEW_TARGET_DISPLAY', 'page_4'); 
+ 
+ /* Mail Keys */  
+ define('WEBFORM_EXT_EMAIL_KEY', 'booking_notification');
+ define('WEBFORM_EXT_GUEST_RESERVATION_NOTIFICATION_KEY', 'booking_notification');
+ define('WEBFORM_EXT_ADMIN_RESERVATION_NOTIFICATION_KEY', 'admin_booking_notification');
 
  /* Email Addresses */
 

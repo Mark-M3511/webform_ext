@@ -367,48 +367,55 @@ function _get_availability_msg()
 function _webform_ext_check_date_errors($arrival_date, $departure_date, &$errors) 
 {
 
+   $error_count = 0;	
    $today = mktime(0, 0, 0);
    $d = new DateTime(date('Y-m-d', $today), new DateTimeZone(WEBFORM_EXT_DEFAULT_TIMEZONE));
    $today = strtotime($d->format('Y-m-d')); 	  
 	
    $good_dates_01 = strtotime($arrival_date);
    if ($good_dates_01 === FALSE){
+   	  $error_count++;	
       $errors['date_error_01'] = t("'Arrival Date' does not appear to be in the correct format.");
    }
    
    $good_dates_05 = strtotime($departure_date);
    if ($good_dates_05 === FALSE){
+      $error_count++;	
       $errors['date_error_05'] = t("'Departure Date' does not appear to be in the correct format.");
    }
-	  
-   $good_dates_10 = (strtotime($arrival_date) < strtotime($departure_date));  
-   if (!$good_dates_10){
-	 $errors['date_error_10'] = t("Planned 'Arrival Date' must be earlier than 'Departure Date'");
-   }
-	  
-   $good_dates_15 = (strtotime($arrival_date) >= strtotime(WEBFORM_EXT_MIN_DATE_FOR_RESERVATION, $today));
-   if (!$good_dates_15){
-      $errors['date_error_15'] = t("Planned 'Arrival Date' should not be earlier than: ". date('Y-F-d', strtotime(WEBFORM_EXT_MIN_DATE_FOR_RESERVATION)));
+   
+   if ($error_count == 0){
+	  $good_dates_10 = (strtotime($arrival_date) < strtotime($departure_date));  
+   	  if (!$good_dates_10){
+   	     $error_count++;
+	     $errors['date_error_10'] = t("Planned 'Arrival Date' must be earlier than 'Departure Date'");
+  	  }
+  	  $good_dates_15 = (strtotime($arrival_date) >= strtotime(WEBFORM_EXT_MIN_DATE_FOR_RESERVATION, $today));
+   	  if (!$good_dates_15){
+   	     $error_count++;
+      	 $errors['date_error_15'] = t("Planned 'Arrival Date' should not be earlier than: ". date('Y-F-d', strtotime(WEBFORM_EXT_MIN_DATE_FOR_RESERVATION)));
+   	  }
    }
    
-   // check for incorrect date format
-  	  
-   $good_dates_20 = (strtotime($departure_date) - strtotime($arrival_date) <= 365 * DAY_IN_SECS);
-   if (!$good_dates_20){
-       $errors['date_error_20'] = t("Planned 'Departure Date' should not be more than 1 year from 'Arrival Date'.");
-   }
-	  
-   $good_dates_25 = (strtotime($departure_date) <= strtotime('+1 year', $today) && strtotime($departure_date) <= strtotime('+1 year', $today));	  
-   if (!$good_dates_25){
-      $errors['date_error_25'] = t("Planned 'Arrival' and 'Departure' dates must be within 1 year of today.");
+   if ($error_count == 0){	  
+   	  $good_dates_20 = (strtotime($departure_date) - strtotime($arrival_date) <= 365 * DAY_IN_SECS);
+   	  if (!$good_dates_20){
+   	     $error_count++;
+         $errors['date_error_20'] = t("Planned 'Departure Date' should not be more than 1 year from 'Arrival Date'.");
+      }
    }
    
-   $retVal = count($errors);
+   if ($error_count == 0){		  
+   	  $good_dates_25 = (strtotime($departure_date) <= strtotime('+1 year', $today) && strtotime($departure_date) <= strtotime('+1 year', $today));	  
+      if (!$good_dates_25){
+         $error_count++;
+         $errors['date_error_25'] = t("Planned 'Arrival' and 'Departure' dates must be within 1 year of today.");
+      }
+   }   
    
-   return  $retVal;
+   return $error_count;
 }
 
-// function _webform_ext_reservation_form_1_validate($form, $form_state) {   
 function _webform_ext_reservation_validate_reservation($form, $form_state)
 {   
    try{     

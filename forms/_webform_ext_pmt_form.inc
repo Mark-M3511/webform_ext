@@ -221,11 +221,11 @@ function _webform_ext_payment_form_1($form, &$form_state)
      	'#type' => 'fieldset',
    	  ); 
    	  $form['fs_admin_only']['offline_booking'] = array(
-      	'#title' => t('This is an offline booking:'),
+      	'#title' => t("This booking was not made through {$_SERVER['SERVER_NAME']}:"),
 	  	'#type' => 'checkbox',
 	  	'#default_value' => 1, 	   
       );
-      $payment_btn_caption = 'Submit Transaction';
+      $payment_btn_caption = 'Submit Transaction';		
    }
    
    $form['submit'] = array(

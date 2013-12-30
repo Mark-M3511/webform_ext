@@ -561,19 +561,38 @@ function _webform_ext_send_confirmation_mail($res, $recp)
       foreach($recp as $email){
         $params['to'] = $email;
         $mail_result = _webform_ext_send_mail($params);
-        if (!$mail_result['result']){
+ 		$vars = array('@email_to' => $params['to'], '@subject' => $params['subject']);
+		if ($mail_result['result']){			
+		   watchdog(WEBFORM_EXT_MODULE_NAME, WEBFORM_EXT_NOTIFICATION_EMAIL_INFO, $vars, WATCHDOG_INFO);		
+		}else{
 	       watchdog(WEBFORM_EXT_MODULE_NAME, WEBFORM_EXT_NOTIFICATION_EMAIL_ERROR, array(), WATCHDOG_ERROR);
         }  
       }
    }
 }
 
+function _webform_ext_get_mail_key($res)
+{
+	$retVal = WEBFORM_EXT_GUEST_RESERVATION_NOTIFICATION_KEY;
+	
+	if ($res->TransactionNumber == $res->IPNTrackingId){
+	   $retVal = WEBFORM_EXT_ADMIN_RESERVATION_NOTIFICATION_KEY;
+	}
+	
+	$msg = 'TransactionNumber = !TransactionNumber | IPNTrackingId = !IPNTrackingId | retVal = !retVal';
+// 	watchdog(WEBFORM_EXT_MODULE_NAME, $msg, array('!TransactionNumber' => $res->TransactionNumber, '!IPNTrackingId' => $res->IPNTrackingId, '!retVal' => $retVal), WATCHDOG_INFO);
+	
+	return $retVal;
+}
+
 function _webform_ext_send_mail($params)
 {
     $mail_result = NULL;
 	try{ 
-       $mail_result = drupal_mail(WEBFORM_EXT_MODULE_NAME, WEBFORM_EXT_EMAIL_KEY, $params['to'], 
-          $params['body_language'], $params, $params['from']);
+	   $res = $params['invoice_data'];	
+	   $mail_key = _webform_ext_get_mail_key($res);
+       $mail_result = drupal_mail(WEBFORM_EXT_MODULE_NAME, $mail_key, $params['to'], 
+          $params['body_language'], $params, $params['from']);   
 	}catch(Exception $e){
        watchdog(WEBFORM_EXT_MODULE_NAME,  t($e->getMessage()), array(), WATCHDOG_ERROR);
     }
@@ -583,14 +602,20 @@ function _webform_ext_send_mail($params)
 
 function _webform_ext_queue_send_mail($params)
 {
-    error_log('Inside function: '. __FUNCTION__ );
     $mail_result = NULL;
 	try{ 
 	  foreach($params->recp as $to){
 	    $params->params['to'] = $to;
-	    error_log('Processing email for: '.$params->params['to']);
-        $mail_result = drupal_mail(WEBFORM_EXT_MODULE_NAME, WEBFORM_EXT_EMAIL_KEY, $to, 
-          $params->params['body_language'], $params->params, $params->params['from']);
+	    $res = $params->params['invoice_data'];	
+	    $mail_key = _webform_ext_get_mail_key($res);
+        $mail_result = drupal_mail(WEBFORM_EXT_MODULE_NAME, $mail_key, $to, 
+          $params->params['body_language'], $params->params, $params->params['from']);          
+        $vars = array('@email_to' => $params->params['to'], '@subject' => $params->params['subject']);
+		if ($mail_result['result']){			
+		   watchdog(WEBFORM_EXT_MODULE_NAME, WEBFORM_EXT_NOTIFICATION_EMAIL_INFO, $vars, WATCHDOG_INFO);		
+		}else{
+	       watchdog(WEBFORM_EXT_MODULE_NAME, WEBFORM_EXT_NOTIFICATION_EMAIL_ERROR, array(), WATCHDOG_ERROR);
+        } 
 	  }
 	}catch(Exception $e){
        watchdog(WEBFORM_EXT_MODULE_NAME,  t($e->getMessage()), array(), WATCHDOG_ERROR);
@@ -601,7 +626,7 @@ function _webform_ext_queue_send_mail($params)
 
 function _webform_ext_processed_blocked_dates($data)
 {
-   // error_log('Inside function: '. __FUNCTION__ );
+// 	  error_log('Inside function: '. __FUNCTION__ );
 //    error_log('Start Date: '. $data->starttime );
 //    error_log('End Date: '. $data->endtime );
    try{

@@ -299,12 +299,13 @@ function webform_ext_mail($key, &$message, $params)
    // dpm($message);
    switch($key)
    {
-      case WEBFORM_EXT_EMAIL_KEY:
+      case WEBFORM_EXT_GUEST_RESERVATION_NOTIFICATION_KEY:
+      case WEBFORM_EXT_ADMIN_RESERVATION_NOTIFICATION_KEY:
 	     $message['subject'] = $params['subject'];		
 // 		 $message['body'][] = $params['message_body'];
 		 $message['body'] = $params['message_body'];
 		 $message['attachments'] = $params['attachments'];
-	     break;
+	     break; 
 	  default:
 	     break;
    }    
