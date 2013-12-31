@@ -548,6 +548,7 @@ function _webform_ext_send_confirmation_mail($res, $recp)
    $params['body_language'] = language_default();
    $params['message_body'][] = '';
    $params['invoice_data'] = $res;
+   $params['mail_key'] = _webform_ext_get_mail_key($res);
    $params['attachments'][] = $public_files. 'this-file-does-not-exist.ext';
 //    $params['attachments'][] = $public_files. 'attractions/800px-Fregata_magnificens1.jpg';
 //    error_log('Path: '. $public_files);
@@ -588,10 +589,8 @@ function _webform_ext_get_mail_key($res)
 function _webform_ext_send_mail($params)
 {
     $mail_result = NULL;
-	try{ 
-	   $res = $params['invoice_data'];	
-	   $mail_key = _webform_ext_get_mail_key($res);
-       $mail_result = drupal_mail(WEBFORM_EXT_MODULE_NAME, $mail_key, $params['to'], 
+	try{ 	  
+       $mail_result = drupal_mail(WEBFORM_EXT_MODULE_NAME, $params['mail_key'], $params['to'], 
           $params['body_language'], $params, $params['from']);   
 	}catch(Exception $e){
        watchdog(WEBFORM_EXT_MODULE_NAME,  t($e->getMessage()), array(), WATCHDOG_ERROR);
@@ -606,9 +605,7 @@ function _webform_ext_queue_send_mail($params)
 	try{ 
 	  foreach($params->recp as $to){
 	    $params->params['to'] = $to;
-	    $res = $params->params['invoice_data'];	
-	    $mail_key = _webform_ext_get_mail_key($res);
-        $mail_result = drupal_mail(WEBFORM_EXT_MODULE_NAME, $mail_key, $to, 
+        $mail_result = drupal_mail(WEBFORM_EXT_MODULE_NAME, $params->params['mail_key'], $to, 
           $params->params['body_language'], $params->params, $params->params['from']);          
         $vars = array('@email_to' => $params->params['to'], '@subject' => $params->params['subject']);
 		if ($mail_result['result']){			
