@@ -528,7 +528,7 @@ function _webform_ext_reservation_form_1_calculate($form, $form_state, &$errors)
 	               }
 	         	}else{
 	               if (empty($errors["room_{$suffix}"])){
-	               	    $errors["room_{$suffix}"] = t("Not enough rooms with  '@amenities' remaining. Please review and re-enter your reservation.", array('@amenities' => $key));
+	               	    $errors["room_{$suffix}"] = t("Not enough rooms with '@amenities' remaining. Please review and re-enter your reservation.", array('@amenities' => $key));
 	               }
 	         	}
 	         	$room_ctr++;	         	
