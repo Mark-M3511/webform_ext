@@ -499,14 +499,14 @@ function _webform_ext_reservation_form_1_calculate($form, $form_state, &$errors)
    $_SESSION['num_guests'] = 0;
    $_SESSION['rates'] = _get_current_rates();
    // eof: initialize session variables
-   //print_r($_SESSION['rates']);
    $room_options = array('Private Bath' => 'pa', 'Shared Bath' => 'sa');   
    $order_total = 0;
    $num_guests = 0;
    $arrival_date = $form_state['values']['arrival_date'];
    $departure_date = $form_state['values']['departure_date'];
    _query_num_rooms_available($arrival_date, $departure_date);
-   foreach($room_options as $key => $suffix){      
+   foreach($room_options as $key => $suffix){    
+   	  $_SESSION[$key] = 0;  
       if (!empty($_SESSION["num_rooms_available_{$suffix}"])){
          $rooms = ($suffix == 'pa') ? $_SESSION['room_ids_pa'] : $_SESSION['room_ids_sa'];
          $room_ctr = 0;
@@ -521,19 +521,21 @@ function _webform_ext_reservation_form_1_calculate($form, $form_state, &$errors)
 	   	        $num_guests += $res->NumGuests;
      		    if ($room_ctr < count($rooms)){
      		       $res->RoomNumber = $rooms[$room_ctr]['rid']; 
-			       error_log("Room Number: {$res->RoomNumber} Room Type: {$key}");
+     		       $res->RoomType = $key;
+			       error_log("Room Number: {$res->RoomNumber} Room Type: {$res->RoomType}");
 	   	           if ($res->TooManyGuests){
 	                  $errors["room{$ctr}"] = t("Room $ctr with [$key] has exceeded the maximum number of 4 allowed guests");
 	               }
 	         	}else{
 	               if (empty($errors["room_{$suffix}"])){
-	               	    $errors["room_{$suffix}"] = t("Not enough rooms with  '@amenities' remaining. Please review and retry your booking.", array('@amenities' => $key));
+	               	    $errors["room_{$suffix}"] = t("Not enough rooms with  '@amenities' remaining. Please review and re-enter your reservation.", array('@amenities' => $key));
 	               }
 	         	}
-	         	$room_ctr++;
+	         	$room_ctr++;	         	
 	      	 }	  
-      	 } 
-      } 	  
+      	 }  
+      	 $_SESSION[$key] = $room_ctr;      	 
+      }          
    }
 	
    $order_total = (WEBFORM_EXT_TEST_ORDER_AMT_1_00 ? 1 : $order_total);	

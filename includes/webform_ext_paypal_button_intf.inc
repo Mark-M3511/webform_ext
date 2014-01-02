@@ -153,6 +153,9 @@ function PayWithPayPal()
    $buttonVar[] = "showCardInfo=true";    
    //send over room numbers appended to "custom" string e.g. 1|2|3|4
    $custom_rec = "{$res->ReservationUid}|$arrival_date|$departure_date";
+//    array('Private Bath' => 'pa', 'Shared Bath' => 'sa');
+   $custom_rec .= "|{$_SESSION['Private Bath']}"; 
+   $custom_rec .= "|{$_SESSION['Shared Bath']}"; 
    if (isset($res->rooms) && count($res->rooms)){
       foreach($res->rooms as $key => $room){ 
         $custom_rec .= "|{$room->RoomNumber}";
@@ -240,6 +243,10 @@ function PaypalPPSIPNCallBackLive()
       $res->RoomCount = 0;	  
 	  /* $res->ReservationUid = $ipn_raw_data['item_number']; */
 	  $res->ReservationUid = $res->Custom[0];
+	  /* bof: Room Types breakdown - 2014-01-02 */ 	  
+	  $res->RoomTypePB = $res->Custom[3];
+	  $res->RoomTypeSB = $res->Custom[4]; 
+	  /* eof: Room Types breakdown - 2014-01-02 */ 	  
 	  $rows = _get_reservation_by_uid($res->ReservationUid);	  
 	  if ($rows){
 	     $res->NumGuests = _get_num_guests_by_uid($res->ReservationUid);
@@ -254,7 +261,8 @@ function PaypalPPSIPNCallBackLive()
 		 }
 	  }
 	  //Room numbers appended to "custom" string e.g. 1|2|3|4
-	  for($ctr = 3; $ctr < count($res->Custom); $ctr++){
+// 	  for($ctr = 3; $ctr < count($res->Custom); $ctr++){
+	  for($ctr = 5; $ctr < count($res->Custom); $ctr++){
 	     $res->Rooms[] = $res->Custom[$ctr];
 		 $res->RoomCount++;
 		 error_log('Room #: ' . $res->Custom[$ctr]);

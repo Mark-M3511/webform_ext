@@ -503,6 +503,10 @@ function _webform_ext_admin_transaction($res)
     $res->ContactNumber_1 = $res->ContactNumCountryCode; 
     $res->ContactNumber_1 .= $res->ContactNumAreaCode;
     $res->ContactNumber_1 .= $res->ContactNumLineNum; 
+    /* bof: Room Types breakdown - 2014-01-02 */ 	  
+	$res->RoomTypePB = "{$_SESSION['Private Bath']}";
+	$res->RoomTypeSB = "{$_SESSION['Shared Bath']}"; 
+	/* eof: Room Types breakdown - 2014-01-02 */ 
 	_webform_ext_wrap_up_IPN_interaction($res);
 }
 
