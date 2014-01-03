@@ -313,7 +313,7 @@ function webform_ext_mail($key, &$message, $params)
 
 function webform_ext_mandrill_mail_alter(&$mandrill_params, $message)
 {
-   _webform_ext_configure_mandrill_merge_vars(&$mandrill_params, $message);
+   _webform_ext_configure_mandrill_merge_vars($mandrill_params, $message);
 }
 
 /* function webform_ext_views_query_alter(&$view, &$query) 

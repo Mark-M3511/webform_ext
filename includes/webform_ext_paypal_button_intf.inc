@@ -144,7 +144,7 @@ function PayWithPayPal()
    $buttonVar[] = "billing_state={$res->ProvState}";	
    $buttonVar[] = "billing_country={$res->Country}";	
    $buttonVar[] = "billing_zip={$res->PostalZip}";
-   PaypalParseTelNum(&$buttonVar, $res);
+   PaypalParseTelNum($buttonVar, $res);
    $buttonVar[] = "showBillingAddress=true";
    $buttonVar[] = "showShippingAddress=false";
    $buttonVar[] = "showBillingEmail=true"; 

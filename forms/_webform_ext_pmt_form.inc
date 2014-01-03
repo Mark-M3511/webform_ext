@@ -257,7 +257,7 @@ function _webform_ext_payment_form_1_validate($form, &$form_state) {
 }
 
 function _webform_ext_payment_form_1_submit($form, &$form_state) {
-    _webform_ext_get_reservation_values($form_state, &$_SESSION['reservation'][0]);
+    _webform_ext_get_reservation_values($form_state, $_SESSION['reservation'][0]);
 	$res = $_SESSION['reservation'];
 	_webform_ext_save_reservation_to_db($res);
 	_webform_ext_save_room_bookings_to_db($res);

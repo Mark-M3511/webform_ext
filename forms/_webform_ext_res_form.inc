@@ -429,7 +429,7 @@ function _webform_ext_reservation_validate_reservation($form, $form_state)
 	  $is_reserved = (strtolower($form_state['triggering_element']['#value']) == strtolower(WEBFORM_EXT_FORM_SUBMIT_BTN_CAPTION));
 	  
 	  if (!$errors && $is_reserved){
-		 _webform_ext_reservation_form_1_calculate($form, $form_state, &$errors);
+		 _webform_ext_reservation_form_1_calculate($form, $form_state, $errors);
 		 $order_total_non_zero = ($_SESSION['order_total'] > 0);	
 		 $order_total_within_upper_limit = ($_SESSION['order_total'] <= WEBFORM_EXT_PP_CHARGE_LIMIT);
 		 $num_guests_non_zero = ($_SESSION['num_guests'] > 0);
@@ -465,7 +465,7 @@ function _webform_ext_load_form_errors($errors)
 }
 
 function _webform_ext_reservation_form_1_submit($form, &$form_state) {
-   $_SESSION['billing_info'] = _webform_ext_reservation_billing_info($form, &$form_state);   
+   $_SESSION['billing_info'] = _webform_ext_reservation_billing_info($form, $form_state);   
    $msg = WEBFORM_EXT_RES_SUCCESS_MSG_1;
    $protocol = IS_SSL ? HTTPS : HTTP; 
    drupal_goto($protocol. WEBFORM_EXT_HOST. '/'. WEBFORM_EXT_PAYMENT_PATH_ALIAS);
