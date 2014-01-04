@@ -544,8 +544,7 @@ function _webform_ext_init_blocked_dates_queue()
 }
 
 function _webform_ext_send_confirmation_mail($res, $recp)
-{
-   $public_files = DRUPAL_ROOT . '/'. variable_get('file_public_path', ''). '/';	
+{   
    $params = array(); 
    $params['from'] = variable_get('site_mail', WEBFORM_EXT_PP_BUSINESS);
    $params['subject'] = WEBFORM_EXT_NOTIFICATION_EMAIL_SUBJECT;
@@ -553,9 +552,14 @@ function _webform_ext_send_confirmation_mail($res, $recp)
    $params['message_body'][] = '';
    $params['invoice_data'] = $res;
    $params['mail_key'] = _webform_ext_get_mail_key($res);
-   $params['attachments'][] = $public_files. 'this-file-does-not-exist.ext';
-//    $params['attachments'][] = $public_files. 'attractions/800px-Fregata_magnificens1.jpg';
-//    error_log('Path: '. $public_files);
+   $public_files = DRUPAL_ROOT . '/'. variable_get('file_public_path', ''). '/';   
+   $attachments = array();
+   // $attachments[] = $public_files. 'attractions/800px-Fregata_magnificens1.jpg';
+   foreach($attachments as $key => $filename){
+	  $vars = array('!filename' => $filename);	
+   	  watchdog(WEBFORM_EXT_MODULE_NAME, 'Sending file: !filename', $vars, WATCHDOG_INFO);
+   }   
+   $params['attachments'] = $attachments;	
    if (WEBFORM_EXT_QUEUE_MAIL_SEND){
       $queue = DrupalQueue::get(WEBFORM_EXT_QUEUE_CONFIRMATION_EMAILS);
       $_params = new StdClass();
