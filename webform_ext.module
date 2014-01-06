@@ -4,8 +4,11 @@
  * webform_ext.module - Extends Webform (Customize form submissions)
  */	
  
-require_once(drupal_get_path('module', 'webform_ext'). '/includes/webform_ext_consts.inc'); 
-require_once(drupal_get_path('module', 'webform_ext'). '/includes/webform_ext_funcs.inc');
+// require_once(drupal_get_path('module', 'webform_ext'). '/includes/webform_ext_consts.inc'); 
+// require_once(drupal_get_path('module', 'webform_ext'). '/includes/webform_ext_funcs.inc');
+
+module_load_include('inc', 'webform_ext', 'includes/webform_ext_consts');
+module_load_include('inc', 'webform_ext', 'includes/webform_ext_funcs');
 
  /**
  * Implementation of hook_help

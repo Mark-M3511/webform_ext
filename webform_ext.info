@@ -10,7 +10,4 @@ files[] = test/webform_ext.test
 ;version info
 version = '7.x-1.0-dev'
 ;javascript files
-;scripts[] = js/jquery.number.min.js
-;scripts[] = js/webform_ext_calcs.js
-;scripts[] = js/webform_ext_errors.js
 scripts[] = js/webform_ext_forms.js
