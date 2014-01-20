@@ -335,7 +335,6 @@ function get_dates_to_block($date_start, $date_end)
       $select->AddExpression('COUNT(confirmed)', 'confirm_count');
       $select->condition('bd.booked_date', array("$date_start", "$date_end"), 'BETWEEN');
 	  $select->condition('bd.booked_date', $subselect_blocked_dates, 'NOT IN');
-	  // $select->condition('bd.confirmed', 1, '=');
       $select->groupBy('bd.booked_date');	
       $select->havingCondition('confirm_count', $num_available_rooms,'>=');	  
 	  $retVal = $select->execute();
@@ -376,7 +375,10 @@ function _search_availaility_blocker_node($booked_dates)
     ->range(0,1)
     ->execute();
 	if (!empty($entity['node'])) {
-	   $node = node_load(array_shift(array_keys($entity['node'])));
+// 	   $node = node_load(array_shift(array_keys($entity['node'])));
+	   $nids = array_keys($entity['node']);
+       $nid = array_shift($nids);
+       $node = node_load($nid);	
 	   /* node_object_prepare($node); */
 	   $retVal = $node->nid;
 	   /* eof: custom data */
@@ -547,7 +549,7 @@ function _webform_ext_send_confirmation_mail($res, $recp)
 {   
    $params = array(); 
    $params['from'] = variable_get('site_mail', WEBFORM_EXT_PP_BUSINESS);
-   $params['subject'] = WEBFORM_EXT_NOTIFICATION_EMAIL_SUBJECT;
+   $params['subject'] = _webform_ext_get_subject($res);
    $params['body_language'] = language_default();
    $params['message_body'][] = '';
    $params['invoice_data'] = $res;
@@ -586,6 +588,20 @@ function _webform_ext_get_mail_key($res)
 	
 	if ($res->TransactionNumber == $res->IPNTrackingId){
 	   $retVal = WEBFORM_EXT_ADMIN_RESERVATION_NOTIFICATION_KEY;
+	}
+	
+	$msg = 'TransactionNumber = !TransactionNumber | IPNTrackingId = !IPNTrackingId | retVal = !retVal';
+// 	watchdog(WEBFORM_EXT_MODULE_NAME, $msg, array('!TransactionNumber' => $res->TransactionNumber, '!IPNTrackingId' => $res->IPNTrackingId, '!retVal' => $retVal), WATCHDOG_INFO);
+	
+	return $retVal;
+}
+
+function _webform_ext_get_subject($res)
+{
+	$retVal = WEBFORM_EXT_GUEST_NOTIFICATION_EMAIL_SUBJECT;
+	
+	if ($res->TransactionNumber == $res->IPNTrackingId){
+	   $retVal = WEBFORM_EXT_ADMIN_NOTIFICATION_EMAIL_SUBJECT;
 	}
 	
 	$msg = 'TransactionNumber = !TransactionNumber | IPNTrackingId = !IPNTrackingId | retVal = !retVal';
@@ -830,7 +846,10 @@ function _retrieve_mail_message($title, $notification_type = 'NORMAL')
     ->range(0,1)
     ->execute();
 	if (!empty($entity['node'])) {
-	   $node = node_load(array_shift(array_keys($entity['node'])));
+// 	   $node = node_load(array_shift(array_keys($entity['node'])));
+	   $nids = array_keys($entity['node']);
+       $nid = array_shift($nids);
+       $node = node_load($nid);	
 	   node_object_prepare($node);	   	   
     }
   }catch(Exception $e){
@@ -850,7 +869,10 @@ function _get_current_rates()
     ->range(0,1)
     ->execute();
 	if (!empty($entity['node'])) {
-	   $node = node_load(array_shift(array_keys($entity['node'])));
+// 	   $node = node_load(array_shift(array_keys($entity['node'])));
+       $nids = array_keys($entity['node']);
+       $nid = array_shift($nids);
+       $node = node_load($nid);
 	   node_object_prepare($node);
 	   $field_lang = field_language('node', $node, 'field_regular_rate'); 
        $retVal['rate'] = $node->field_regular_rate[$field_lang][0]['value'];
