@@ -78,11 +78,14 @@
  define('WEBFORM_EXT_RES_SUCCESS_MSG_3', 'Reservation information processed successfully.');
  define('WEBFORM_EXT_PP_ITEM_NAME', 'Room Stay: @num_guests guest(s) | @num_rooms room(s) | @from - @to | US $@amount');
  define('WEBFORM_EXT_NOTIFICATION_EMAIL_SUBJECT', 'Vupoint Guest House Reservation & Payment Confirmation');
+ define('WEBFORM_EXT_GUEST_NOTIFICATION_EMAIL_SUBJECT', 'Vupoint Guest House Reservation & Payment Confirmation');
+ define('WEBFORM_EXT_ADMIN_NOTIFICATION_EMAIL_SUBJECT', 'Vupoint Guest House Reservation');
  define('WEBFORM_EXT_NOTIFICATION_EMAIL_ERROR', 'Unable to send confirmation email.');
  define('WEBFORM_EXT_RESERVATION_ACCEPTED_MSG', 'Your reservation is accepted. Please enter your personal information for payment and confirmation of your stay.');
  define('WEBFORM_EXT_CHECKED_ROOMS_MSG', 'Please Note: Checked rooms will be included in your booking. Uncheck rooms you wish to exclude.');
  define('ERROR_AVAILABILITY', 'Unable to complete reservation. Please check your dates.');
  define('WEBFORM_EXT_NOTIFICATION_EMAIL_INFO', 'Email successfully sent to \'@email_to\' with subject \'@subject\'');
+ define('WEBFORM_EXT_ORDER_VALUE_LIMIT_EXCEEDED_MSG', 'Order total must not exceed $!amount (!currency). Your order total is: $!order_total (!currency).');
  
  /* Paypal Flags */
  define('WEBFORM_EXT_PP_TRANSACTION_TYPE', 'Sale');

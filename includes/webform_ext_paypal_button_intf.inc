@@ -241,8 +241,9 @@ function PaypalPPSIPNCallBackLive()
       $res->Note = '';
 	  $res->ContactNumber_1 = '';
       $res->RoomCount = 0;	  
-	  /* $res->ReservationUid = $ipn_raw_data['item_number']; */
-	  $res->ReservationUid = $res->Custom[0];
+	  $res->ReservationUid = $ipn_raw_data['item_number'];
+	  $res->TransactionNumber = $ipn_raw_data['txn_id'];
+// 	  $res->ReservationUid = $res->Custom[0];
 	  /* bof: Room Types breakdown - 2014-01-02 */ 	  
 	  $res->RoomTypePB = $res->Custom[3];
 	  $res->RoomTypeSB = $res->Custom[4]; 

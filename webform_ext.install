@@ -2074,6 +2074,89 @@ function webform_ext_update_7127()
    return $ret;	
 }
 
+/**
+ * Update #28 posted 2014-01-23.
+ * Add trans_id column to reservations table
+ * Add Index on trans_id
+ */
+function webform_ext_update_7128()
+{
+   $ret = t('Column(s) added to \'zen_vupoint_reservations\' table.');
+   
+   $table = 'zen_vupoint_reservations';
+   
+    /* $init_val = 1; */  
+	$field = 'trans_id';
+    $schema =  array(
+	    'description' => 'Transaction Id received from Payment Processor', 
+        'type' => 'varchar',
+		'length' => 30,        
+        'not null' => FALSE,  
+    );
+   
+    $index = 'vupoint_reservations_trans_id';
+    $keys_new = array(
+      'indexes' => array(
+	     $index => array($field),
+      ),
+    );
+
+    db_add_field($table, $field, $schema, $keys_new); 
+   
+    return $ret;	
+}
+
+// db_add_index($table, 'vupoint_cc_trans_sid', array('sid'));
+/**
+ * Update #29 posted 2014-01-23.
+ * Rename indexes previously added to rooms table
+ */
+function webform_ext_update_7129()
+{
+   $ret = t('Indexes renamed for \'zen_vupoint_rooms\' table.');
+   
+   $table = 'zen_vupoint_rooms';
+   
+   $field = 'available_negation_code';   
+   $index_name = 'vupoint_reservations_avail_neg_code';      
+   db_drop_index($table, $index_name);   
+   $index_name = 'vupoint_rooms_avail_neg_code';
+   db_add_index($table, $index_name, array($field,));
+   
+   $field = 'available_negation_date';      
+   $index_name = 'vupoint_reservations_avail_neg_date';
+   db_drop_index($table, $index_name);   
+   $index_name = 'vupoint_rooms_available_negation_date';
+   db_add_index($table, $index_name, array($field,));
+   
+   return $ret;	
+}
+
+/**
+ * Update #30 posted 2014-01-23.
+ * Rename indexes previously added to rooms table
+ */
+function webform_ext_update_7130()
+{
+   $ret = t('Indexes renamed for \'zen_vupoint_rooms\' table.');
+   
+   $table = 'zen_vupoint_rooms';
+   
+   $field = 'code';   
+   $index_name = 'vupoint_reservations_code';      
+   db_drop_index($table, $index_name);   
+   $index_name = 'vupoint_rooms_code';
+   db_add_index($table, $index_name, array($field,));
+   
+   $field = 'nid';      
+   $index_name = 'vupoint_reservations_nid';
+   db_drop_index($table, $index_name);   
+   $index_name = 'vupoint_rooms_nid';
+   db_add_index($table, $index_name, array($field,));
+   
+   return $ret;	
+}
+
 
 function webform_ext_uninstall()
 {

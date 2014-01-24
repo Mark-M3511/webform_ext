@@ -409,7 +409,7 @@ function _webform_ext_check_date_errors($arrival_date, $departure_date, &$errors
    	  $good_dates_25 = (strtotime($departure_date) <= strtotime('+1 year', $today) && strtotime($departure_date) <= strtotime('+1 year', $today));	  
       if (!$good_dates_25){
          $error_count++;
-         $errors['date_error_25'] = t("Planned 'Arrival' and 'Departure' dates must be within 1 year of today.");
+         $errors['date_error_25'] = t("Planned 'Arrival' or 'Departure' dates must be within 1 year of today.");
       }
    }   
    
@@ -433,11 +433,19 @@ function _webform_ext_reservation_validate_reservation($form, $form_state)
 		 $order_total_non_zero = ($_SESSION['order_total'] > 0);	
 		 $order_total_within_upper_limit = ($_SESSION['order_total'] <= WEBFORM_EXT_PP_CHARGE_LIMIT);
 		 $num_guests_non_zero = ($_SESSION['num_guests'] > 0);
-		 if (!$order_total_non_zero || !$num_guests_non_zero){
+		 if (!$order_total_non_zero){
 			$errors['zero_guests_or_order_total'] = t('Please select at least 1 room and a time span of at least 1 night.');
 		 }
+		 if (!$num_guests_non_zero){
+		 	$errors['num_guests_non_zero'] = t('Please select at least 1 guest per room.');
+		 }
+		 $vars = array(
+		 	'!currency' => WEBFORM_EXT_PP_TRANSACTION_CURRENCY, 
+		 	'!amount' => number_format(WEBFORM_EXT_PP_CHARGE_LIMIT, 2), 
+		 	'!order_total' => number_format($_SESSION['order_total'], 2),
+		 	);
 		 if (!$order_total_within_upper_limit){
-		    $errors['order_total_over_limit'] = t('Order total must not exceed $!amount (!currency). Your order total is: $!order_total (!currency).', array('!currency' => WEBFORM_EXT_PP_TRANSACTION_CURRENCY, '!amount' => number_format(WEBFORM_EXT_PP_CHARGE_LIMIT, 2), '!order_total' => number_format($_SESSION['order_total'], 2),));
+		    $errors['order_total_over_limit'] = t(WEBFORM_EXT_ORDER_VALUE_LIMIT_EXCEEDED_MSG, $vars);
 		 }
 	  }	 
 	    
@@ -476,14 +484,16 @@ function _webform_ext_reservation_billing_info($form, $form_state)
    $protocol = (IS_SSL ? HTTPS : HTTP);
    
    $serverName = $_SERVER['SERVER_NAME'];
-   $serverPort = $_SERVER['SERVER_PORT'];
+//    $serverPort = $_SERVER['SERVER_PORT'];
+   $serverPort = (IS_SSL ? '443' : '80');
    $url = $protocol. WEBFORM_EXT_HOST;
    
    $billing = new StdClass();   
    $billing->ItemName = format_string(WEBFORM_EXT_PP_ITEM_NAME, array('@num_guests' => $_SESSION['num_guests'], '@num_rooms' => count($_SESSION['reservation_room_picks']),'@from' =>  $form_state['values']['arrival_date'], '@to' => $form_state['values']['departure_date'], '@amount' => number_format($_SESSION['order_total'], 2),));
    
    $billing->ReturnURL = $url .'/'. WEBFORM_EXT_NOTIFICATION_SUCCESS_PAGE;
-   $billing->NotifyURL = $protocol .$serverName.':'.$serverPort . WEBFORM_EXT_PP_NOTIFY_URL_FRAGMENT;;
+//    $billing->NotifyURL = $protocol . $serverName . ':'. $serverPort . WEBFORM_EXT_PP_NOTIFY_URL_FRAGMENT;
+   $billing->NotifyURL = $protocol . $serverName . WEBFORM_EXT_PP_NOTIFY_URL_FRAGMENT;	
    $billing->CancelUrl = $url .'/'. WEBFORM_EXT_PAYMENT_PATH_ALIAS;
    $billing->RegisteredBusinessEmail = (WEBFORM_EXT_TEST_PP_USE_SANDBOX ? WEBFORM_EXT_PP_BUSINESS_TEST : WEBFORM_EXT_PP_BUSINESS);
    $billing->OrderTotal = $_SESSION['order_total'];

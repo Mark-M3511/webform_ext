@@ -486,6 +486,7 @@ function _webform_ext_update_reservation_from_IPN($res)
 	  	   'postal_zip_code' => $res->PostalZip,
 		   'request_status' => $res->RequestStatus,
 	       'ipn_track_id' => $res->IPNTrackingId,
+	       'trans_id' => $res->TransactionNumber,
          )
        )
        ->condition('reservation_uid', $res->ReservationUid,'=')
